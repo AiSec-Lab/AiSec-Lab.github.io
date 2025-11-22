@@ -189,11 +189,14 @@ async function renderPapers() {
   target.innerHTML = papers
     .map(
       (paper) => `
-      <div class="paper">
-        <div class="title">${paper.title || 'Untitled'}</div>
-        <div class="meta">${paper.authors || ''}</div>
-        <div class="meta">${paper.venue ? paper.venue + ' · ' : ''}${paper.year || ''}</div>
-        ${paper.url ? `<a class="text-link" href="${paper.url}" target="_blank" rel="noopener">Link</a>` : ''}
+      <div class="paper${paper.image ? ' with-thumb' : ''}">
+        ${paper.image ? `<div class="paper-thumb" style="background-image:url('${paper.image}')"></div>` : ''}
+        <div>
+          <div class="title">${paper.title || 'Untitled'}</div>
+          <div class="meta">${paper.authors || ''}</div>
+          <div class="meta">${paper.venue ? paper.venue + ' · ' : ''}${paper.year || ''}</div>
+          ${paper.url ? `<a class="text-link" href="${paper.url}" target="_blank" rel="noopener">Link</a>` : ''}
+        </div>
       </div>
     `,
     )
@@ -226,12 +229,14 @@ function parseBib(text) {
   const doi = field('doi');
   const url = field('url') || (doi ? `https://doi.org/${doi}` : '');
   const venue = journal;
+  const image = field('image');
   return {
     title,
     authors: formatAuthors(authors),
     year,
     venue,
     url,
+    image,
   };
 }
 

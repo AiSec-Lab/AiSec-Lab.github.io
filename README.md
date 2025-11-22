@@ -17,8 +17,8 @@ Home page extras:
 ## Edit content
 - Update lab name/text in the HTML headers; most content comes from the JSON/Bib files in `data/` and `papers/`.
 - Papers: drop or replace `papers/1.bib`, `2.bib`, … (stop numbering where you want the list to end).
-- News/Projects/People/Gallery: edit the respective JSON files; fields are self-describing. Optional `"image": "relative/path.jpg"` fields allow thumbnails (news, projects, people) and backgrounds (gallery).
-- Gallery images: set `"image": "path/to/file.jpg"` for each item or leave blank for a gradient placeholder.
+- News/Projects/People/Gallery: edit the respective JSON files; fields are self-describing. Optional `"image": "relative/path.jpg"` fields allow thumbnails (news, projects, people, papers) and backgrounds (gallery).
+- Store images under `assets/images/<news|projects|people|gallery|papers>/` for easy organization.
 - Navigation: add a link to `grants.html` if you want to surface the grants page.
 
 ## Local preview
@@ -36,8 +36,8 @@ Then open `http://localhost:4000` in your browser.
 
 ## GitHub Actions
 - `.github/workflows/build.yml` runs `node build.js` on push and uploads the `dist` artifact.
+- The same workflow deploys to GitHub Pages; site will publish at `https://aiseclab.github.io/website/`.
 
 ## Deploying to GitHub Pages
-- Commit and push to GitHub.
-- In repo settings, enable GitHub Pages to serve from the `main` branch (root).
-- The site will be available at the provided Pages URL.
+- The workflow deploys automatically on push to `main`/`master`. Expected URL: `https://aiseclab.github.io/website/`.
+- If disabled, enable Pages (Source: GitHub Actions) in repo settings.

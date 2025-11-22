@@ -4,20 +4,20 @@
     "summary": "Short description of what you are building or studying.",
     "tags": ["Methods", "Dataset"],
     "link": "",
-    "image": "assets/sample/project-1.jpg"
+    "image": "assets/images/projects/placeholder.svg"
   },
   {
     "title": "Project placeholder B",
     "summary": "Add collaborators, milestones, and outputs here.",
     "tags": ["Prototype", "Collaboration"],
     "link": "",
-    "image": "assets/sample/project-2.jpg"
+    "image": "assets/images/projects/placeholder.svg"
   },
   {
     "title": "Project placeholder C",
     "summary": "Replace this with your active grant or student project.",
     "tags": ["Student-led", "Open data"],
     "link": "",
-    "image": "assets/sample/project-3.jpg"
+    "image": "assets/images/projects/placeholder.svg"
   }
 ]
