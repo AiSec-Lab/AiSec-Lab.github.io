@@ -1,0 +1,43 @@
+# Lab Website Starter
+
+Static, ai-folio-inspired layout for an academic lab. Each section lives on its own page for easier content management:
+
+- `index.html` — short about + links
+- `news.html` — pulls from `data/news.json`
+- `papers.html` — pulls numbered `.bib` files from `papers/` (1.bib, 2.bib, …)
+- `projects.html` — pulls from `data/projects.json`
+- `people.html` — pulls from `data/people.json`
+- `gallery.html` — pulls from `data/gallery.json`
+- `grants.html` — hidden for now; only linked from its footer
+
+Home page extras:
+- Hero news card scrolls updates from `data/news.json`.
+- Terminal-style panel supports commands: `help`, `news`, `papers`, `projects`, `people`, `gallery`, `clear` (reads from the JSON/Bib data).
+
+## Edit content
+- Update lab name/text in the HTML headers; most content comes from the JSON/Bib files in `data/` and `papers/`.
+- Papers: drop or replace `papers/1.bib`, `2.bib`, … (stop numbering where you want the list to end).
+- News/Projects/People/Gallery: edit the respective JSON files; fields are self-describing. Optional `"image": "relative/path.jpg"` fields allow thumbnails (news, projects, people) and backgrounds (gallery).
+- Gallery images: set `"image": "path/to/file.jpg"` for each item or leave blank for a gradient placeholder.
+- Navigation: add a link to `grants.html` if you want to surface the grants page.
+
+## Local preview
+Serve the folder with any static server, e.g.:
+
+```bash
+python3 -m http.server 4000
+```
+
+Then open `http://localhost:4000` in your browser.
+
+## Static build (pre-render data into HTML)
+- Run `node build.js` to render pages with data into `dist/` (copies assets, data, papers).
+- The output can be served directly (e.g., GitHub Pages) without needing runtime fetches for the data.
+
+## GitHub Actions
+- `.github/workflows/build.yml` runs `node build.js` on push and uploads the `dist` artifact.
+
+## Deploying to GitHub Pages
+- Commit and push to GitHub.
+- In repo settings, enable GitHub Pages to serve from the `main` branch (root).
+- The site will be available at the provided Pages URL.

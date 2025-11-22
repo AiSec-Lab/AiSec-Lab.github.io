@@ -1,0 +1,26 @@
+[
+  {
+    "name": "Principal Investigator",
+    "role": "PI",
+    "bio": "Research focus, contact links, and interests go here.",
+    "focus": ["Theme A", "Theme B"],
+    "link": "",
+    "image": "assets/sample/people-pi.jpg"
+  },
+  {
+    "name": "Co-Principal Investigator",
+    "role": "Co-PI",
+    "bio": "Co-leads projects and mentors students.",
+    "focus": ["Collaboration", "Systems"],
+    "link": "",
+    "image": "assets/sample/people-copi.jpg"
+  },
+  {
+    "name": "Student Researcher",
+    "role": "Student",
+    "bio": "Working on experiments and writing up results.",
+    "focus": ["Experiments", "Writing"],
+    "link": "",
+    "image": "assets/sample/people-student.jpg"
+  }
+]

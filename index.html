@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lab Website Template</title>
+    <meta
+      name="description"
+      content="Lightweight academic lab site with separate pages for news, papers, projects, people, and gallery."
+    />
+    <link rel="stylesheet" href="assets/styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container nav">
+        <div class="brand">
+          <div class="brand-mark">LAB</div>
+          <div class="brand-text">
+            <div class="brand-title">Your Lab Name</div>
+            <div class="brand-subtitle">Academic research group</div>
+          </div>
+        </div>
+        <button class="nav-toggle" aria-label="Toggle navigation">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+            <path d="M4 7h16M4 12h16M4 17h16" stroke="#0f1b2d" stroke-width="1.7" />
+          </svg>
+        </button>
+        <nav class="nav-links" aria-label="Primary navigation">
+          <a href="index.html">Home</a>
+          <a href="news.html">News</a>
+          <a href="papers.html">Papers</a>
+          <a href="projects.html">Projects</a>
+          <a href="people.html">People</a>
+          <a href="gallery.html">Gallery</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="container hero-grid">
+          <div class="hero-card">
+            <h1>Your Lab Name</h1>
+            <p>
+              Keep this page short and welcoming. Add one or two sentences about your
+              focus areas and how you collaborate with students, partners, and the
+              community.
+            </p>
+            <div class="stat-row">
+              <span class="stat-chip">1 PI • 1 Co-PI • 1 Student</span>
+              <span class="stat-chip secondary">Separate pages for updates and outputs</span>
+            </div>
+          </div>
+          <div class="panel news-panel">
+            <div class="pill">News</div>
+            <h2>Recent updates</h2>
+            <p class="lead">Pulled from <code>data/news.json</code>. Scroll to view.</p>
+            <div class="scroll-list" data-hero-news></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="container section">
+        <div class="panel terminal-panel">
+          <div class="pill">Terminal</div>
+          <h2>Quick lookup</h2>
+          <p class="lead">
+            Type commands (help, news, papers, projects, people, gallery, clear). Data is read from
+            the JSON and BibTeX files.
+          </p>
+          <div class="terminal-window">
+            <div class="terminal-output" data-terminal-output aria-live="polite"></div>
+            <form class="terminal-form" data-terminal-form>
+              <span class="prompt">$</span>
+              <input
+                type="text"
+                name="command"
+                autocomplete="off"
+                spellcheck="false"
+                placeholder="Type a command, e.g., news"
+                data-terminal-input
+              />
+            </form>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="container">
+        <div>© <span data-year></span> Your Lab Name — ready for GitHub Pages.</div>
+        <div>Hidden grants page lives at <code>grants.html</code> until you add it to the navigation.</div>
+      </div>
+    </footer>
+
+    <script src="assets/script.js"></script>
+  </body>
+</html>

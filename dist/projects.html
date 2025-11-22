@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Projects — Lab Website</title>
+    <link rel="stylesheet" href="assets/styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container nav">
+        <div class="brand">
+          <div class="brand-mark">LAB</div>
+          <div class="brand-text">
+            <div class="brand-title">Your Lab Name</div>
+            <div class="brand-subtitle">Academic research group</div>
+          </div>
+        </div>
+        <button class="nav-toggle" aria-label="Toggle navigation">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+            <path d="M4 7h16M4 12h16M4 17h16" stroke="#0f1b2d" stroke-width="1.7" />
+          </svg>
+        </button>
+        <nav class="nav-links" aria-label="Primary navigation">
+          <a href="index.html">Home</a>
+          <a href="news.html">News</a>
+          <a href="papers.html">Papers</a>
+          <a href="projects.html">Projects</a>
+          <a href="people.html">People</a>
+          <a href="gallery.html">Gallery</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="page-hero">
+        <div class="container">
+          <h1>Projects</h1>
+          <p>Ongoing work and prototypes loaded from <code>data/projects.json</code>.</p>
+        </div>
+      </section>
+
+      <section class="container section">
+        <div class="panel">
+          <div class="pill">Work in progress</div>
+          <h2>Current projects</h2>
+          <p class="lead">Add or edit projects in the JSON file; include tags and links.</p>
+          <div class="grid projects" data-projects-list>
+      <div class="card with-thumb">
+        <div class="thumb" style="background-image:url('assets/sample/project-1.jpg')"></div>
+        <div>
+          <h3>Project placeholder A</h3>
+          <p class="muted">Short description of what you are building or studying.</p>
+          <div class="tags"><span class="tag">Methods</span><span class="tag">Dataset</span></div>
+          
+        </div>
+      </div>
+    
+      <div class="card with-thumb">
+        <div class="thumb" style="background-image:url('assets/sample/project-2.jpg')"></div>
+        <div>
+          <h3>Project placeholder B</h3>
+          <p class="muted">Add collaborators, milestones, and outputs here.</p>
+          <div class="tags"><span class="tag">Prototype</span><span class="tag">Collaboration</span></div>
+          
+        </div>
+      </div>
+    
+      <div class="card with-thumb">
+        <div class="thumb" style="background-image:url('assets/sample/project-3.jpg')"></div>
+        <div>
+          <h3>Project placeholder C</h3>
+          <p class="muted">Replace this with your active grant or student project.</p>
+          <div class="tags"><span class="tag">Student-led</span><span class="tag">Open data</span></div>
+          
+        </div>
+      </div>
+    </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="container">
+        <div>© <span data-year></span> Your Lab Name.</div>
+      </div>
+    </footer>
+
+    <script src="assets/script.js"></script>
+  </body>
+</html>

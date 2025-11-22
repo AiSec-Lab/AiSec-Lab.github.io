@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Papers — Lab Website</title>
+    <link rel="stylesheet" href="assets/styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container nav">
+        <div class="brand">
+          <div class="brand-mark">LAB</div>
+          <div class="brand-text">
+            <div class="brand-title">Your Lab Name</div>
+            <div class="brand-subtitle">Academic research group</div>
+          </div>
+        </div>
+        <button class="nav-toggle" aria-label="Toggle navigation">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+            <path d="M4 7h16M4 12h16M4 17h16" stroke="#0f1b2d" stroke-width="1.7" />
+          </svg>
+        </button>
+        <nav class="nav-links" aria-label="Primary navigation">
+          <a href="index.html">Home</a>
+          <a href="news.html">News</a>
+          <a href="papers.html">Papers</a>
+          <a href="projects.html">Projects</a>
+          <a href="people.html">People</a>
+          <a href="gallery.html">Gallery</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="page-hero">
+        <div class="container">
+          <h1>Papers</h1>
+          <p>
+            Drop numbered BibTeX files (1.bib, 2.bib, ...) in the <code>papers/</code>
+            folder. This page loads them in order until a number is missing.
+          </p>
+        </div>
+      </section>
+
+      <section class="container section">
+        <div class="panel">
+          <div class="pill">Publications</div>
+          <h2>Selected work</h2>
+          <p class="lead">Update or replace the sample .bib files in the papers folder.</p>
+          <div class="paper-list" data-papers-list></div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="container">
+        <div>© <span data-year></span> Your Lab Name.</div>
+      </div>
+    </footer>
+
+    <script src="assets/script.js"></script>
+  </body>
+</html>
