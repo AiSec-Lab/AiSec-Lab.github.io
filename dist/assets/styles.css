@@ -193,6 +193,7 @@ a {
 }
 
 .section > .panel {
+  width: 100%;
   max-width: 980px;
   margin: 0 auto;
 }
@@ -221,6 +222,11 @@ a {
 
 .section {
   margin: 28px 0 22px;
+}
+
+.section.container {
+  display: flex;
+  justify-content: center;
 }
 
 .grid {
