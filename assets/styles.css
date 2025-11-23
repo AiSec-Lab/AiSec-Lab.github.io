@@ -41,11 +41,18 @@ a {
   border-bottom: 1px solid rgba(217, 226, 239, 0.8);
 }
 
-.nav {
+.site-header .container {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 18px 0;
+  padding: 16px 0;
+}
+
+.site-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
 }
 
 .brand {
@@ -684,7 +691,7 @@ a {
     font-size: 1.95rem;
   }
 
-  .nav {
+  .site-nav {
     padding: 14px 0;
   }
 }
