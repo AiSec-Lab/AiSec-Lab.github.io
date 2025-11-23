@@ -130,8 +130,7 @@ a {
 }
 
 .hero .container {
-  display: flex;
-  justify-content: center;
+  display: block;
 }
 
 .hero-card {
@@ -195,7 +194,7 @@ a {
   box-shadow: var(--shadow);
   position: relative;
   width: 100%;
-  max-width: 980px;
+  max-width: 1100px;
 }
 
 .panel h2 {
@@ -221,9 +220,8 @@ a {
 }
 
 .section {
-  margin: 28px 0 22px;
-  display: flex;
-  justify-content: center;
+  margin: 32px 0 24px;
+  display: block;
 }
 
 .grid {
@@ -580,10 +578,10 @@ a {
 .terminal-window {
   background: #0b1220;
   border: 1px solid #1e293b;
-  border-radius: 12px;
+  border-radius: 8px;
   padding: 22px;
   font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
-  min-height: 460px;
+  min-height: 560px;
   display: flex;
   flex-direction: column;
   gap: 12px;
