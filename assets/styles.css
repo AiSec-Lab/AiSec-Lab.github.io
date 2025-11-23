@@ -32,11 +32,6 @@ a {
   text-decoration: none;
 }
 
-.container {
-  width: min(94vw, 1100px);
-  margin: 0 auto;
-}
-
 .site-header {
   position: sticky;
   top: 0;
