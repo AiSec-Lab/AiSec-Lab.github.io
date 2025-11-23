@@ -32,6 +32,15 @@ a {
   text-decoration: none;
 }
 
+.container {
+  width: 100%;
+  max-width: 1200px;
+  padding-left: 16px;
+  padding-right: 16px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
 .site-header {
   position: sticky;
   top: 0;
@@ -126,7 +135,7 @@ a {
 }
 
 .hero {
-  padding: 72px 0 40px;
+  padding: 64px 0 40px;
 }
 
 .hero .container {
