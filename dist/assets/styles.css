@@ -192,6 +192,11 @@ a {
   position: relative;
 }
 
+.section > .panel {
+  max-width: 980px;
+  margin: 0 auto;
+}
+
 .panel h2 {
   margin: 0 0 12px;
   font-size: 1.4rem;
