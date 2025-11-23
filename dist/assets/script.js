@@ -39,6 +39,7 @@ async function loadJSON(path, fallback = []) {
 let cachedData = null;
 let dataLoadError = false;
 let currentPath = ['/'];
+const rootDirs = ['news', 'projects', 'people', 'papers', 'gallery'];
 async function loadAllData() {
   if (cachedData) return cachedData;
   const [news, projects, people, gallery, papers] = await Promise.all([
@@ -384,21 +385,21 @@ async function handleCommand(command, output, promptSpan) {
 
 function changeDir(target, output, promptSpan) {
   if (!target || target === '.') return;
-  if (target === '..') {
+  const clean = normalizePath(target);
+  if (clean === '..') {
     if (currentPath.length > 1) currentPath.pop();
     updatePrompt(promptSpan);
     listCurrent(output, cachedData || {});
     return;
   }
-  if (target === '/') {
+  if (clean === '/') {
     currentPath = ['/'];
     updatePrompt(promptSpan);
     listCurrent(output, cachedData || {});
     return;
   }
-  const dirs = ['news', 'projects', 'people', 'papers', 'gallery'];
-  if (dirs.includes(target.toLowerCase())) {
-    currentPath = ['/', target.toLowerCase()];
+  if (rootDirs.includes(clean.toLowerCase())) {
+    currentPath = ['/', clean.toLowerCase()];
     updatePrompt(promptSpan);
     listCurrent(output, cachedData || {});
   } else {
@@ -469,7 +470,7 @@ function handleView(target, data, output) {
       papers: 'papers.html',
       gallery: 'gallery.html',
     };
-    const key = target.toLowerCase();
+    const key = target.toLowerCase().replace(/\/+$/, '');
     if (pageLinks[key]) openLink(pageLinks[key]);
     else appendLine(output, `No such item: ${target}`);
     return;
@@ -524,6 +525,60 @@ function handleView(target, data, output) {
   }
 }
 
+function autocompleteCommand(inputValue, data) {
+  const trimmed = inputValue.trim();
+  if (!trimmed) return 'ls';
+  const parts = trimmed.split(/\s+/);
+  const currentDir = currentPath[currentPath.length - 1];
+  const last = parts[parts.length - 1];
+  const isCd = parts[0] === 'cd';
+
+  if (isCd) {
+    const target = parts[1] || '';
+    const clean = target.replace(/\/+$/, '');
+    const match = rootDirs.find((d) => d.startsWith(clean.toLowerCase()));
+    if (match) {
+      parts[1] = match + '/';
+      return parts.join(' ');
+    }
+    return inputValue;
+  }
+
+  if (parts.length === 1) {
+    const match = rootDirs.find((d) => d.startsWith(last.toLowerCase()));
+    return match ? match : inputValue;
+  }
+
+  const list = (() => {
+    switch (currentDir) {
+      case 'news':
+        return data.news || [];
+      case 'projects':
+        return data.projects || [];
+      case 'people':
+        return data.people || [];
+      case 'papers':
+        return data.papers || [];
+      case 'gallery':
+        return data.gallery || [];
+      default:
+        return [];
+    }
+  })();
+
+  const titles = list
+    .map((item, idx) => [`${idx + 1}`, (item.title || item.name || '').toLowerCase()])
+    .flat();
+
+  const matchTitle = titles.find((t) => t.startsWith(last.toLowerCase()));
+  if (matchTitle) {
+    parts[parts.length - 1] = matchTitle;
+    return parts.join(' ');
+  }
+
+  return inputValue;
+}
+
 function appendLine(output, text, isCommand = false, promptText = '$') {
   const line = document.createElement('div');
   line.className = 'terminal-line';
@@ -544,6 +599,16 @@ function updatePrompt(span) {
 function getPrompt() {
   const suffix = currentPath.length === 1 ? '/' : '/' + currentPath.slice(1).join('/');
   return `${suffix} $`;
+}
+
+function normalizePath(path) {
+  if (!path) return '/';
+  let clean = path.trim();
+  clean = clean.replace(/^\/+/, '');
+  clean = clean.replace(/\/+$/, '');
+  if (clean === '') return '/';
+  if (clean === '..') return '..';
+  return clean;
 }
 
 function escapeHTML(str) {
