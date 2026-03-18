@@ -1041,14 +1041,9 @@ body.terminal-maximized-lock {
 }
 
 .panel.terminal-panel.terminal-panel-maximized .terminal-window {
+  height: calc(100vh - 120px);
   min-height: calc(100vh - 120px);
   max-height: calc(100vh - 120px);
-}
-
-.panel.terminal-panel.terminal-panel-maximized .terminal-output {
-  max-height: none;
-  flex: 0 0 auto;
-  min-height: auto;
 }
 
 .panel.terminal-panel .pill {
@@ -1070,13 +1065,15 @@ body.terminal-maximized-lock {
   padding: 22px;
   font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
   line-height: 1.2;
+  height: 560px;
   min-height: 560px;
+  max-height: 560px;
   display: flex;
   flex-direction: column;
   gap: 0;
   position: relative;
   box-shadow: none;
-  overflow-y: auto;
+  overflow: hidden;
 }
 
 .panel.terminal-panel .terminal-window::before {
@@ -1087,10 +1084,12 @@ body.terminal-maximized-lock {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  overflow: visible;
-  max-height: none;
-  flex: 0 0 auto;
-  min-height: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: 100%;
+  padding-right: 8px;
 }
 
 .terminal-line {
@@ -1142,6 +1141,7 @@ body.terminal-maximized-lock {
   align-items: stretch;
   gap: 0;
   margin-top: 4px;
+  flex: 0 0 auto;
 }
 
 .terminal-prompt-header {
