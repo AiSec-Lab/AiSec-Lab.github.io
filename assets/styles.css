@@ -273,6 +273,57 @@ a {
   padding-right: 168px;
 }
 
+.detail-panel-person {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(241, 246, 255, 0.98));
+  border-color: rgba(31, 111, 235, 0.2);
+}
+
+.person-detail-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 220px;
+  gap: 24px;
+  align-items: start;
+  margin: 14px 0 18px;
+}
+
+.person-detail-main h1 {
+  margin: 0 0 8px;
+}
+
+.person-detail-main .detail-meta {
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.person-detail-main p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 1.02rem;
+}
+
+.person-detail-photo {
+  width: 220px;
+  height: 220px;
+  border-radius: 20px;
+  border: 1px solid rgba(31, 111, 235, 0.2);
+  box-shadow: 0 16px 38px rgba(15, 27, 45, 0.16);
+  background-color: #eef4ff;
+}
+
+.person-detail-photo.photo {
+  background-size: cover;
+  background-position: center;
+}
+
+.person-detail-photo-fallback {
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-size: 2.3rem;
+  font-weight: 700;
+  background: linear-gradient(145deg, rgba(31, 111, 235, 0.9), rgba(22, 194, 181, 0.9));
+}
+
 .publication-logo-wrap {
   position: absolute;
   top: 20px;
@@ -543,7 +594,7 @@ a {
 }
 
 .people-grid {
-  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
 }
 
 .people-rows {
@@ -552,30 +603,54 @@ a {
 }
 
 .people-grid-leads {
-  grid-template-columns: repeat(2, minmax(230px, 1fr));
+  grid-template-columns: repeat(2, minmax(280px, 1fr));
 }
 
-.people-grid-students,
+.people-grid-students {
+  grid-template-columns: repeat(2, minmax(280px, 1fr));
+}
+
 .people-grid-others {
-  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
 }
 
 .person {
-  display: flex;
-  gap: 14px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 124px;
+  gap: 18px;
   align-items: center;
+  padding: 20px;
+  min-height: 182px;
+  border-color: rgba(31, 111, 235, 0.2);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(239, 246, 255, 0.9));
+}
+
+.person-card-body {
+  min-width: 0;
+}
+
+.person-card-body h3 {
+  margin-bottom: 10px;
+}
+
+.person-card-body .muted {
+  margin: 10px 0 0;
+  line-height: 1.55;
 }
 
 .avatar {
-  width: 64px;
-  height: 64px;
-  border-radius: 18px;
+  width: 124px;
+  height: 124px;
+  border-radius: 20px;
   background: linear-gradient(145deg, rgba(31, 111, 235, 0.75), rgba(22, 194, 181, 0.75));
   display: grid;
   place-items: center;
   color: #fff;
-  font-size: 1.1rem;
+  font-size: 1.55rem;
   font-weight: 700;
+  border: 1px solid rgba(31, 111, 235, 0.18);
+  box-shadow: 0 12px 26px rgba(15, 27, 45, 0.2);
+  justify-self: end;
 }
 
 .role {
@@ -786,8 +861,11 @@ a {
   min-height: 110px;
   border-radius: 12px;
   background: linear-gradient(135deg, rgba(15, 27, 45, 0.25), rgba(31, 111, 235, 0.25));
-  background-size: cover;
+  background-size: contain;
+  background-repeat: no-repeat;
   background-position: center;
+  background-color: #fff;
+  border: 1px solid rgba(15, 27, 45, 0.08);
 }
 
 .news-panel .scroll-list {
@@ -1076,8 +1154,32 @@ body.terminal-maximized-lock {
 }
 
 @media (max-width: 620px) {
-  .people-grid-leads {
+  .people-grid-leads,
+  .people-grid-students {
     grid-template-columns: 1fr;
+  }
+
+  .person {
+    grid-template-columns: 1fr;
+    min-height: auto;
+    gap: 14px;
+  }
+
+  .avatar {
+    width: 112px;
+    height: 112px;
+    font-size: 1.3rem;
+    justify-self: start;
+  }
+
+  .person-detail-hero {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .person-detail-photo {
+    width: 164px;
+    height: 164px;
   }
 
   .detail-panel.has-publication-logo {

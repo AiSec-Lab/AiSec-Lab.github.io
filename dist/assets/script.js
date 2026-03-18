@@ -210,18 +210,17 @@ function renderPeopleCards(people) {
       (person) => `
       <a class="detail-card-link" href="${getDetailLink('people', person._detailId)}">
       <div class="card person detail-card">
+        <div class="person-card-body">
+          <h3>${person.name || 'Name'}</h3>
+          <div class="role">${person.role || 'Role'}</div>
+          <p class="muted">${person.bio || ''}</p>
+          <div class="cta-row"><span class="text-link">Open details</span></div>
+        </div>
         ${
           person.image
             ? `<div class="avatar photo" style="background-image:url('${person.image}')"></div>`
             : `<div class="avatar">${getInitials(person.name)}</div>`
         }
-        <div>
-          <h3>${person.name || 'Name'}</h3>
-          <div class="role">${person.role || 'Role'}</div>
-          <p class="muted">${person.bio || ''}</p>
-          ${renderTags(person.focus)}
-          <div class="cta-row"><span class="text-link">Open details</span></div>
-        </div>
       </div>
       </a>
     `,
@@ -324,12 +323,20 @@ function renderDetailItem(type, item) {
           'scopus',
           'orcid',
         ]);
+        const personPhoto = item.image
+          ? `<div class="person-detail-photo photo" style="background-image:url('${escapeAttr(item.image)}')"></div>`
+          : `<div class="person-detail-photo person-detail-photo-fallback">${escapeHTML(getInitials(item.name))}</div>`;
       return `
-        <div class="panel detail-panel">
+        <div class="panel detail-panel detail-panel-person">
           <a class="text-link" href="${backPage}">← Back to People</a>
-          <h1>${item.name || 'Unnamed person'}</h1>
-          <div class="detail-meta">${item.role || ''}</div>
-          <p>${item.bio || 'No bio provided.'}</p>
+          <div class="person-detail-hero">
+            <div class="person-detail-main">
+              <h1>${item.name || 'Unnamed person'}</h1>
+              <div class="detail-meta">${item.role || ''}</div>
+              <p>${item.bio || 'No bio provided.'}</p>
+            </div>
+            ${personPhoto}
+          </div>
           ${renderTags(item.focus)}
           ${profileLinks}
           ${item.link ? `<div class="cta-row"><a class="text-link" href="${item.link}" target="_blank" rel="noopener">Profile link</a></div>` : ''}
@@ -338,7 +345,8 @@ function renderDetailItem(type, item) {
       }
     case 'publications':
     case 'papers': {
-      const venueYear = [item.venue, item.year].filter(Boolean).join(' · ');
+      const venue = item?.fields?.booktitle || item?.fields?.journal || item.venue || '';
+      const year = item?.fields?.year || item.year || '';
       const logo = item.image
         ? `<div class="publication-logo-wrap"><img class="publication-logo" src="${escapeAttr(item.image)}" alt="Publication venue logo" loading="lazy" /></div>`
         : '';
@@ -347,8 +355,9 @@ function renderDetailItem(type, item) {
           <a class="text-link" href="${backPage}">← Back to Publications</a>
           ${logo}
           <h1>${item.title || 'Untitled publication'}</h1>
-          <div class="detail-meta">${item.authors || ''}</div>
-          <div class="detail-meta">${venueYear}</div>
+          ${item.authors ? `<div class="detail-meta">${item.authors}</div>` : ''}
+          ${venue ? `<div class="detail-meta">${venue}</div>` : ''}
+          ${year ? `<div class="detail-meta">${year}</div>` : ''}
           ${renderResourceLinksFromObject(item.fields || {}, ['poster', 'presentation', 'slides', 'code', 'dataset'])}
           ${renderPublicationFields(item)}
           ${item.url ? `<div class="cta-row"><a class="text-link" href="${item.url}" target="_blank" rel="noopener">Publication link</a></div>` : ''}
@@ -368,14 +377,20 @@ function renderPublicationFields(item) {
     ...fields,
   };
 
-  const preferredOrder = [
+  const hiddenKeys = new Set([
     'entrytype',
     'citationkey',
+    'eprint',
+    'primaryclass',
+    // Already shown in the fixed header block.
     'title',
     'author',
-    'year',
     'booktitle',
     'journal',
+    'year',
+  ]);
+
+  const preferredOrder = [
     'editor',
     'volume',
     'number',
@@ -392,16 +407,16 @@ function renderPublicationFields(item) {
     'isbn',
     'issn',
     'numpages',
-    'eprint',
     'archiveprefix',
-    'primaryclass',
     'image',
   ];
 
   const remaining = Object.keys(allFields)
-    .filter((key) => !preferredOrder.includes(key))
+    .filter((key) => !preferredOrder.includes(key) && !hiddenKeys.has(key))
     .sort();
-  const orderedKeys = [...preferredOrder, ...remaining].filter((key, idx, arr) => arr.indexOf(key) === idx);
+  const orderedKeys = [...preferredOrder, ...remaining]
+    .filter((key, idx, arr) => arr.indexOf(key) === idx)
+    .filter((key) => !hiddenKeys.has(key));
 
   const rows = orderedKeys
     .filter((key) => allFields[key])
@@ -1005,8 +1020,69 @@ async function handleCommand(command, output, promptSpan) {
         handleView(target, data, output, openAfterPrint);
         break;
       }
-      appendLine(output, `Unknown command: ${command}`);
+      if (handleDummyTerminalCommand(command, output)) break;
+      appendLine(output, `Not supported: ${command}`);
   }
+}
+
+function handleDummyTerminalCommand(command, output) {
+  const raw = command.trim();
+  const cmd = raw.toLowerCase();
+  const dir = currentPath[currentPath.length - 1];
+  const fakePwd = dir === '/' ? '/home/visitor/aiseclab' : `/home/visitor/aiseclab/${dir}`;
+
+  if (cmd === 'pwd') {
+    appendLine(output, fakePwd);
+    appendLine(output, 'Yep, same path as your productivity spiral.');
+    return true;
+  }
+
+  if (cmd === 'whoami') {
+    appendLine(output, 'visitor');
+    appendLine(output, 'Root is on vacation, indefinitely.');
+    return true;
+  }
+
+  if (cmd === 'uname') {
+    appendLine(output, 'Linux');
+    appendLine(output, 'Definitely Linux, emotionally also Linux.');
+    return true;
+  }
+
+  if (cmd === 'uname -a') {
+    appendLine(output, 'Linux aiseclab 6.8.0-demo #1 SMP PREEMPT_DYNAMIC x86_64 GNU/Linux');
+    appendLine(output, 'This kernel is 80% imagination, 20% terminal cosplay.');
+    return true;
+  }
+
+  if (cmd === 'date') {
+    appendLine(output, new Date().toString());
+    appendLine(output, 'Time flies, especially during debugging.');
+    return true;
+  }
+
+  if (cmd === 'cat /etc/os-release') {
+    appendLine(output, 'NAME="Ubuntu"');
+    appendLine(output, 'VERSION="24.04 LTS (Noble Numbat)"');
+    appendLine(output, 'ID=ubuntu');
+    appendLine(output, 'PRETTY_NAME="Ubuntu 24.04 LTS"');
+    appendLine(output, 'This distro is so stable even typos feel permanent.');
+    return true;
+  }
+
+  if (cmd.startsWith('echo ')) {
+    appendLine(output, raw.slice(5));
+    appendLine(output, 'Finally, a command that always agrees with you.');
+    return true;
+  }
+
+  if (cmd.startsWith('mkdir ') || cmd.startsWith('touch ') || cmd.startsWith('rm ') || cmd.startsWith('cp ') || cmd.startsWith('mv ')) {
+    appendLine(output, 'Demo mode: filesystem-changing commands are simulated only.');
+    appendLine(output, 'Your files are safe from both accidents and ambition.');
+    return true;
+  }
+
+  return false;
 }
 
 function printHelp(output) {
@@ -1014,6 +1090,8 @@ function printHelp(output) {
   appendLine(output, 'Root dirs:');
   rootDirs.forEach((dir) => appendStyledLine(output, `<span class="terminal-green">/${escapeHTML(dir)}</span>`));
   appendLine(output, 'Tip: use "view <item>" to print details, or add "--link" to open the link.');
+  appendLine(output, 'History: use ↑ and ↓ to browse previous commands.');
+  appendLine(output, 'Autocomplete: press Tab to complete commands, dirs, and item names.');
 }
 
 function changeDir(target, output, promptSpan) {

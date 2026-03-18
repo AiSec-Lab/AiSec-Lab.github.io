@@ -400,18 +400,17 @@ function renderPeopleCards(people) {
       (person) => `
       <a class="detail-card-link" href="${getDetailLink('people', person._detailId)}">
       <div class="card person detail-card">
+        <div class="person-card-body">
+          <h3>${person.name || 'Name'}</h3>
+          <div class="role">${person.role || 'Role'}</div>
+          <p class="muted">${person.bio || ''}</p>
+          <div class="cta-row"><span class="text-link">Open details</span></div>
+        </div>
         ${
           person.image
             ? `<div class="avatar photo" style="background-image:url('${person.image}')"></div>`
             : `<div class="avatar">${getInitials(person.name)}</div>`
         }
-        <div>
-          <h3>${person.name || 'Name'}</h3>
-          <div class="role">${person.role || 'Role'}</div>
-          <p class="muted">${person.bio || ''}</p>
-          ${renderTags(person.focus)}
-          <div class="cta-row"><span class="text-link">Open details</span></div>
-        </div>
       </div>
       </a>
     `,
