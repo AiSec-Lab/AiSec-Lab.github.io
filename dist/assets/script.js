@@ -345,8 +345,6 @@ function renderDetailItem(type, item) {
       }
     case 'publications':
     case 'papers': {
-      const venue = item?.fields?.booktitle || item?.fields?.journal || item.venue || '';
-      const year = item?.fields?.year || item.year || '';
       const logo = item.image
         ? `<div class="publication-logo-wrap"><img class="publication-logo" src="${escapeAttr(item.image)}" alt="Publication venue logo" loading="lazy" /></div>`
         : '';
@@ -355,9 +353,6 @@ function renderDetailItem(type, item) {
           <a class="text-link" href="${backPage}">← Back to Publications</a>
           ${logo}
           <h1>${item.title || 'Untitled publication'}</h1>
-          ${item.authors ? `<div class="detail-meta">${item.authors}</div>` : ''}
-          ${venue ? `<div class="detail-meta">${venue}</div>` : ''}
-          ${year ? `<div class="detail-meta">${year}</div>` : ''}
           ${renderResourceLinksFromObject(item.fields || {}, ['poster', 'presentation', 'slides', 'code', 'dataset'])}
           ${renderPublicationFields(item)}
           ${item.url ? `<div class="cta-row"><a class="text-link" href="${item.url}" target="_blank" rel="noopener">Publication link</a></div>` : ''}
@@ -371,6 +366,8 @@ function renderDetailItem(type, item) {
 
 function renderPublicationFields(item) {
   const fields = item.fields && typeof item.fields === 'object' ? item.fields : {};
+  const venue = fields.booktitle || fields.journal || item.venue || '';
+  const year = fields.year || item.year || '';
   const allFields = {
     entrytype: item.entryType || '',
     citationkey: item.citationKey || '',
@@ -388,6 +385,8 @@ function renderPublicationFields(item) {
     'booktitle',
     'journal',
     'year',
+    'month',
+    'image',
   ]);
 
   const preferredOrder = [
@@ -403,13 +402,27 @@ function renderPublicationFields(item) {
     'url',
     'abstract',
     'keywords',
-    'month',
     'isbn',
     'issn',
     'numpages',
     'archiveprefix',
-    'image',
   ];
+
+  const fixedRows = [
+    item.authors ? { label: 'Authors', value: item.authors } : null,
+    venue ? { label: 'Journal/Conference', value: venue } : null,
+    year ? { label: 'Year', value: year } : null,
+  ]
+    .filter(Boolean)
+    .map(
+      (row) => `
+        <div class="bib-field">
+          <div class="bib-key">${escapeHTML(row.label)}</div>
+          <div class="bib-value">${escapeHTML(row.value)}</div>
+        </div>
+      `,
+    )
+    .join('');
 
   const remaining = Object.keys(allFields)
     .filter((key) => !preferredOrder.includes(key) && !hiddenKeys.has(key))
@@ -433,7 +446,7 @@ function renderPublicationFields(item) {
 
   return `
     <div class="bib-fields">
-      ${rows || '<div class="bib-empty">No BibTeX fields found.</div>'}
+      ${fixedRows}${rows || (!fixedRows ? '<div class="bib-empty">No BibTeX fields found.</div>' : '')}
     </div>
   `;
 }
