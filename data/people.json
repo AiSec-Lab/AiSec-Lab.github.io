@@ -27,7 +27,7 @@
     "name": "Tarun Aditya Kusupati",
     "role": "Graduate Student",
     "bio": "Graduate student working on LLMs, side-channels, and ransomware detection, with a focus on classification and experimentation.",
-    "focus": ["LLMs", "Side-channels", "Ransomware detection", "Classification", "Experimentation"],
+    "focus": ["LLMs", "Side-channels", "Ransomware detection"],
     "image": "assets/images/people/placeholder.svg"
   }
 ]
