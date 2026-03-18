@@ -1,22 +1,44 @@
 [
   {
-    "title": "Project placeholder A",
+    "title": "Local Mind",
     "summary": "Short description of what you are building or studying.",
     "tags": ["Methods", "Dataset"],
     "link": "",
     "image": "assets/images/projects/placeholder.svg"
   },
   {
-    "title": "Project placeholder B",
+    "title": "Side-channel on Neural Networks",
     "summary": "Add collaborators, milestones, and outputs here.",
     "tags": ["Prototype", "Collaboration"],
     "link": "",
     "image": "assets/images/projects/placeholder.svg"
   },
   {
-    "title": "Project placeholder C",
+    "title": "Vtons",
+    "summary": "Add collaborators, milestones, and outputs here.",
+    "tags": ["Prototype", "Collaboration"],
+    "link": "",
+    "image": "assets/images/projects/placeholder.svg"
+  },
+  
+  {
+    "title": "LLMs and RAGs",
+    "summary": "Add collaborators, milestones, and outputs here.",
+    "tags": ["Prototype", "Collaboration"],
+    "link": "",
+    "image": "assets/images/projects/placeholder.svg"
+  },
+  {
+    "title": "IoT architectures",
     "summary": "Replace this with your active grant or student project.",
     "tags": ["Student-led", "Open data"],
+    "link": "",
+    "image": "assets/images/projects/placeholder.svg"
+  },
+  {
+    "title": "Wearable security",
+    "summary": "Add collaborators, milestones, and outputs here.",
+    "tags": ["Prototype", "Collaboration"],
     "link": "",
     "image": "assets/images/projects/placeholder.svg"
   }

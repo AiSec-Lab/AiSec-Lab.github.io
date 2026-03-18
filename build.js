@@ -8,7 +8,7 @@ async function main() {
   await fs.mkdir(dist, { recursive: true });
 
   const data = await loadAllData(root);
-  const pages = ['index.html', 'news.html', 'papers.html', 'projects.html', 'people.html', 'gallery.html', 'grants.html'];
+  const pages = ['index.html', 'news.html', 'papers.html', 'projects.html', 'people.html', 'detail.html', 'grants.html'];
 
   for (const page of pages) {
     const html = await fs.readFile(path.join(root, page), 'utf8');
@@ -24,14 +24,13 @@ async function main() {
 }
 
 async function loadAllData(root) {
-  const [news, projects, people, gallery, papers] = await Promise.all([
+  const [news, projects, people, papers] = await Promise.all([
     loadJSON(path.join(root, 'data/news.json')),
     loadJSON(path.join(root, 'data/projects.json')),
     loadJSON(path.join(root, 'data/people.json')),
-    loadJSON(path.join(root, 'data/gallery.json')),
     loadBibPapers(path.join(root, 'papers')),
   ]);
-  return { news, projects, people, gallery, papers };
+  return { news, projects, people, papers };
 }
 
 async function loadJSON(filePath) {
@@ -61,26 +60,188 @@ async function loadBibPapers(folder) {
 
 function parseBib(text) {
   if (!text) return null;
-  const field = (name) => {
-    const match = text.match(new RegExp(`${name}\\s*=\\s*[{\"]([^{}\n]+)[}\"]`, 'i'));
-    return match ? match[1].trim() : '';
-  };
-  const title = field('title');
-  const authors = field('author');
-  const year = field('year');
-  const journal = field('journal') || field('booktitle') || '';
-  const doi = field('doi');
-  const url = field('url') || (doi ? `https://doi.org/${doi}` : '');
-  const venue = journal;
-  const image = field('image');
+  const parsed = parseBibEntry(text);
+  if (!parsed) return null;
+
+  const fields = parsed.fields;
+  const title = fields.title || '';
+  const author = fields.author || '';
+  const year = fields.year || '';
+  const venue = fields.booktitle || fields.journal || '';
+  const doi = fields.doi || '';
+  const url = fields.url || (doi ? `https://doi.org/${doi}` : '');
+  const image = fields.image || '';
+
   return {
+    entryType: parsed.entryType,
+    citationKey: parsed.citationKey,
+    fields,
     title,
-    authors: formatAuthors(authors),
+    authors: formatAuthors(author),
     year,
     venue,
     url,
     image,
   };
+}
+
+function parseBibEntry(rawText) {
+  const text = String(rawText || '').replace(/\r\n?/g, '\n');
+  const atIndex = text.indexOf('@');
+  if (atIndex < 0) return null;
+
+  const typeMatch = text.slice(atIndex + 1).match(/^\s*([a-zA-Z]+)/);
+  if (!typeMatch) return null;
+  const entryType = typeMatch[1].toLowerCase();
+  let i = atIndex + 1 + typeMatch[0].length;
+
+  while (i < text.length && /\s/.test(text[i])) i += 1;
+  const openChar = text[i];
+  if (openChar !== '{' && openChar !== '(') return null;
+  const closeChar = openChar === '{' ? '}' : ')';
+  const closeIndex = findMatchingDelimiter(text, i, openChar, closeChar);
+  if (closeIndex < 0) return null;
+
+  const entryBody = text.slice(i + 1, closeIndex).trim();
+  const firstComma = findTopLevelComma(entryBody);
+  if (firstComma < 0) return null;
+
+  const citationKey = entryBody.slice(0, firstComma).trim();
+  const fieldsText = entryBody.slice(firstComma + 1);
+  const fields = parseBibFields(fieldsText);
+  return { entryType, citationKey, fields };
+}
+
+function findMatchingDelimiter(text, startIndex, openChar, closeChar) {
+  let depth = 0;
+  let inQuote = false;
+  for (let i = startIndex; i < text.length; i += 1) {
+    const ch = text[i];
+    const prev = i > 0 ? text[i - 1] : '';
+
+    if (ch === '"' && prev !== '\\') {
+      inQuote = !inQuote;
+      continue;
+    }
+    if (inQuote) continue;
+
+    if (ch === openChar) {
+      depth += 1;
+      continue;
+    }
+    if (ch === closeChar) {
+      depth -= 1;
+      if (depth === 0) return i;
+    }
+  }
+  return -1;
+}
+
+function findTopLevelComma(text) {
+  let depth = 0;
+  let inQuote = false;
+  for (let i = 0; i < text.length; i += 1) {
+    const ch = text[i];
+    const prev = i > 0 ? text[i - 1] : '';
+    if (ch === '"' && prev !== '\\') {
+      inQuote = !inQuote;
+      continue;
+    }
+    if (inQuote) continue;
+    if (ch === '{') depth += 1;
+    if (ch === '}') depth = Math.max(0, depth - 1);
+    if (ch === ',' && depth === 0) return i;
+  }
+  return -1;
+}
+
+function parseBibFields(text) {
+  const fields = {};
+  let i = 0;
+
+  while (i < text.length) {
+    while (i < text.length && /[\s,]/.test(text[i])) i += 1;
+    if (i >= text.length) break;
+
+    const keyStart = i;
+    while (i < text.length && /[a-zA-Z0-9_:-]/.test(text[i])) i += 1;
+    const key = text.slice(keyStart, i).trim().toLowerCase();
+    if (!key) {
+      i += 1;
+      continue;
+    }
+
+    while (i < text.length && /\s/.test(text[i])) i += 1;
+    if (text[i] !== '=') {
+      while (i < text.length && text[i] !== ',') i += 1;
+      continue;
+    }
+    i += 1;
+    while (i < text.length && /\s/.test(text[i])) i += 1;
+
+    const { value, nextIndex } = readBibValue(text, i);
+    fields[key] = cleanupBibValue(value);
+    i = nextIndex;
+
+    while (i < text.length && /\s/.test(text[i])) i += 1;
+    if (text[i] === ',') i += 1;
+  }
+
+  return fields;
+}
+
+function readBibValue(text, startIndex) {
+  if (startIndex >= text.length) return { value: '', nextIndex: startIndex };
+  const startChar = text[startIndex];
+
+  if (startChar === '{') {
+    let depth = 0;
+    for (let i = startIndex; i < text.length; i += 1) {
+      const ch = text[i];
+      if (ch === '{') depth += 1;
+      if (ch === '}') {
+        depth -= 1;
+        if (depth === 0) {
+          return {
+            value: text.slice(startIndex + 1, i),
+            nextIndex: i + 1,
+          };
+        }
+      }
+    }
+    return { value: text.slice(startIndex + 1), nextIndex: text.length };
+  }
+
+  if (startChar === '"') {
+    let i = startIndex + 1;
+    while (i < text.length) {
+      if (text[i] === '"' && text[i - 1] !== '\\') {
+        return {
+          value: text.slice(startIndex + 1, i),
+          nextIndex: i + 1,
+        };
+      }
+      i += 1;
+    }
+    return { value: text.slice(startIndex + 1), nextIndex: text.length };
+  }
+
+  let i = startIndex;
+  while (i < text.length && text[i] !== ',' && text[i] !== '\n' && text[i] !== '\r') i += 1;
+  return {
+    value: text.slice(startIndex, i),
+    nextIndex: i,
+  };
+}
+
+function cleanupBibValue(value) {
+  let clean = String(value || '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  while (clean.startsWith('{') && clean.endsWith('}') && clean.length > 1) {
+    clean = clean.slice(1, -1).trim();
+  }
+  return clean;
 }
 
 function formatAuthors(authors) {
@@ -98,7 +259,6 @@ function injectData(html, data) {
   out = fillSlot(out, 'data-news-list', renderNews(data.news));
   out = fillSlot(out, 'data-projects-list', renderProjects(data.projects));
   out = fillSlot(out, 'data-people-list', renderPeople(data.people));
-  out = fillSlot(out, 'data-gallery-list', renderGallery(data.gallery));
   out = fillSlot(out, 'data-papers-list', renderPapers(data.papers));
   return out;
 }
@@ -114,16 +274,18 @@ function renderHeroNews(news) {
   return news
     .slice(0, 5)
     .map(
-      (item) => `
-        <div class="card news-card${item.image ? ' with-thumb' : ''}">
+      (item, idx) => `
+        <a class="detail-card-link" href="${getDetailLink('news', idx + 1)}">
+        <div class="card news-card detail-card${item.image ? ' with-thumb' : ''}">
           ${item.image ? `<div class="thumb" style="background-image:url('${item.image}')"></div>` : ''}
           <div>
             <div class="pill">${formatDate(item.date)}</div>
             <h3>${item.title || 'Untitled update'}</h3>
             <p class="muted">${item.summary || ''}</p>
-            ${item.link ? `<a class="text-link" href="${item.link}" target="_blank" rel="noopener">Learn more</a>` : ''}
+            <div class="cta-row"><span class="text-link">Open details</span></div>
           </div>
         </div>
+        </a>
       `,
     )
     .join('');
@@ -133,16 +295,18 @@ function renderNews(news) {
   if (!news || !news.length) return '<p class="muted">Add items to data/news.json to see them here.</p>';
   return news
     .map(
-      (item) => `
-      <div class="card news-card${item.image ? ' with-thumb' : ''}">
+      (item, idx) => `
+      <a class="detail-card-link" href="${getDetailLink('news', idx + 1)}">
+      <div class="card news-card detail-card${item.image ? ' with-thumb' : ''}">
         ${item.image ? `<div class="thumb" style="background-image:url('${item.image}')"></div>` : ''}
         <div>
           <div class="pill">${formatDate(item.date)}</div>
           <h3>${item.title || 'Untitled update'}</h3>
           <p class="muted">${item.summary || ''}</p>
-          ${item.link ? `<a class="text-link" href="${item.link}" target="_blank" rel="noopener">Learn more</a>` : ''}
+          <div class="cta-row"><span class="text-link">Open details</span></div>
         </div>
       </div>
+      </a>
     `,
     )
     .join('');
@@ -152,16 +316,18 @@ function renderProjects(projects) {
   if (!projects || !projects.length) return '<p class="muted">Add projects to data/projects.json to see them here.</p>';
   return projects
     .map(
-      (project) => `
-      <div class="card${project.image ? ' with-thumb' : ''}">
+      (project, idx) => `
+      <a class="detail-card-link" href="${getDetailLink('projects', idx + 1)}">
+      <div class="card detail-card${project.image ? ' with-thumb' : ''}">
         ${project.image ? `<div class="thumb" style="background-image:url('${project.image}')"></div>` : ''}
         <div>
           <h3>${project.title || 'Project title'}</h3>
           <p class="muted">${project.summary || ''}</p>
           ${renderTags(project.tags)}
-          ${project.link ? `<div class="cta-row"><a class="text-link" href="${project.link}" target="_blank" rel="noopener">Project page</a></div>` : ''}
+          <div class="cta-row"><span class="text-link">Open details</span></div>
         </div>
       </div>
+      </a>
     `,
     )
     .join('');
@@ -169,11 +335,14 @@ function renderProjects(projects) {
 
 function renderPeople(people) {
   if (!people || !people.length) return '<p class="muted">Add members to data/people.json to see them here.</p>';
-  const ranked = [...people].sort((a, b) => rankRole(a.role) - rankRole(b.role));
+  const ranked = people
+    .map((person, idx) => ({ ...person, _detailId: idx + 1 }))
+    .sort((a, b) => rankRole(a.role) - rankRole(b.role));
   return ranked
     .map(
       (person) => `
-      <div class="card person">
+      <a class="detail-card-link" href="${getDetailLink('people', person._detailId)}">
+      <div class="card person detail-card">
         ${
           person.image
             ? `<div class="avatar photo" style="background-image:url('${person.image}')"></div>`
@@ -184,9 +353,10 @@ function renderPeople(people) {
           <div class="role">${person.role || 'Role'}</div>
           <p class="muted">${person.bio || ''}</p>
           ${renderTags(person.focus)}
-          ${person.link ? `<div class="cta-row"><a class="text-link" href="${person.link}" target="_blank" rel="noopener">Profile</a></div>` : ''}
+          <div class="cta-row"><span class="text-link">Open details</span></div>
         </div>
       </div>
+      </a>
     `,
     )
     .join('');
@@ -200,40 +370,29 @@ function rankRole(role = '') {
   return 3;
 }
 
-function renderGallery(gallery) {
-  if (!gallery || !gallery.length) return '<p class="muted">Add items to data/gallery.json to see them here.</p>';
-  return gallery
-    .map((item) => {
-      const background = item.image ? `style="background-image:url('${item.image}');"` : '';
-      return `
-        <div class="gallery-item" ${background}>
-          <div class="gallery-overlay">
-            <div class="gallery-title">${item.title || 'Untitled'}</div>
-            <div class="gallery-caption">${item.caption || ''}</div>
-          </div>
-        </div>
-      `;
-    })
-    .join('');
-}
-
 function renderPapers(papers) {
   if (!papers || !papers.length) return '<p class="muted">Add numbered .bib files in the papers/ folder (1.bib, 2.bib, ...).</p>';
   return papers
     .map(
-      (paper) => `
-      <div class="paper${paper.image ? ' with-thumb' : ''}">
+      (paper, idx) => `
+      <a class="detail-card-link" href="${getDetailLink('publications', idx + 1)}">
+      <div class="paper detail-card${paper.image ? ' with-thumb' : ''}">
         ${paper.image ? `<div class="paper-thumb" style="background-image:url('${paper.image}')"></div>` : ''}
         <div>
           <div class="title">${paper.title || 'Untitled'}</div>
           <div class="meta">${paper.authors || ''}</div>
           <div class="meta">${paper.venue ? paper.venue + ' · ' : ''}${paper.year || ''}</div>
-          ${paper.url ? `<a class="text-link" href="${paper.url}" target="_blank" rel="noopener">Link</a>` : ''}
+          <div class="cta-row"><span class="text-link">Open details</span></div>
         </div>
       </div>
+      </a>
     `,
     )
     .join('');
+}
+
+function getDetailLink(type, id) {
+  return `detail.html?type=${encodeURIComponent(type)}&id=${encodeURIComponent(id)}`;
 }
 
 function getInitials(name = '') {

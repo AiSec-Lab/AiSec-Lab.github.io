@@ -6,7 +6,7 @@
     <title>AiSec Lab</title>
     <meta
       name="description"
-      content="AiSec Lab — academic research group with news, papers, projects, people, and gallery."
+      content="AiSec Lab — academic research group with news, publications, projects, and people."
     />
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
@@ -14,7 +14,7 @@
       integrity="sha384-xh6O/Ck1AhZ1tcHTfb3e8DqRL3OjaxAg/P6MqxsVXniPXTWh05rq6ArtyTcwxgW9"
       crossorigin="anonymous"
     />
-    <link rel="stylesheet" href="assets/styles.css" />
+    <link rel="stylesheet" href="assets/styles.css?v=20260317-terminalfix24" />
     <link rel="icon" type="image/x-icon" href="assets/images/logo/logo.ico" />
   </head>
   <body>
@@ -37,10 +37,9 @@
         <nav class="nav-links" aria-label="Primary navigation">
           <a href="index.html">Home</a>
           <a href="news.html">News</a>
-          <a href="papers.html">Papers</a>
+          <a href="papers.html">Publications</a>
           <a href="projects.html">Projects</a>
           <a href="people.html">People</a>
-          <a href="gallery.html">Gallery</a>
         </nav>
       </div>
     </header>
@@ -51,23 +50,29 @@
           <div class="row justify-content-center">
             <div class="col-12 col-lg-10">
               <div class="panel terminal-panel">
-                <h2>AiSec Lab</h2>
-                <p class="lead">
-                  The primary focus of the lab is on the intersection of AI and security, exploring how
-                  artificial intelligence can both enhance and threaten cybersecurity. The lab intends to develop tools to enhance security and privacy measures using AI, while also investigating potential vulnerabilities introduced by AI systems.
-                </p>
+                <div class="terminal-titlebar">
+                  <div class="terminal-controls" aria-hidden="true">
+                    <button type="button" class="terminal-control is-disabled" title="Minimize disabled" disabled>—</button>
+                    <button type="button" class="terminal-control" title="Maximize" data-terminal-maximize>▢</button>
+                    <button type="button" class="terminal-control is-disabled" title="Close disabled" disabled>×</button>
+                  </div>
+                  <div class="terminal-title">Terminal</div>
+                </div>
                 <div class="terminal-window">
                   <div class="terminal-output" data-terminal-output aria-live="polite"></div>
                   <form class="terminal-form" data-terminal-form>
-                    <span class="prompt">$</span>
-                    <input
-                      type="text"
-                      name="command"
-                      autocomplete="off"
-                      spellcheck="false"
-                      placeholder="Type a command, e.g., news"
-                      data-terminal-input
-                    />
+                    <div class="terminal-prompt-header" data-terminal-prompt-header></div>
+                    <div class="terminal-input-row">
+                      <span class="prompt" data-terminal-prompt>$</span>
+                      <input
+                        type="text"
+                        name="command"
+                        autocomplete="off"
+                        spellcheck="false"
+                        placeholder="Type a command, e.g., news"
+                        data-terminal-input
+                      />
+                    </div>
                   </form>
                 </div>
               </div>
@@ -89,6 +94,6 @@
       integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
       crossorigin="anonymous"
     ></script>
-    <script src="assets/script.js"></script>
+    <script src="assets/script.js?v=20260317-terminalfix24"></script>
   </body>
 </html>

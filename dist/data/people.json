@@ -1,6 +1,6 @@
 [
   {
-    "name": "Principal Investigator",
+    "name": "Sayed Erfan Arefin",
     "role": "PI",
     "bio": "Research focus, contact links, and interests go here.",
     "focus": ["Theme A", "Theme B"],
@@ -8,7 +8,7 @@
     "image": "assets/images/people/placeholder.svg"
   },
   {
-    "name": "Co-Principal Investigator",
+    "name": "Tasnia Ashrafi Heya",
     "role": "Co-PI",
     "bio": "Co-leads projects and mentors students.",
     "focus": ["Collaboration", "Systems"],
@@ -16,7 +16,7 @@
     "image": "assets/images/people/placeholder.svg"
   },
   {
-    "name": "Student Researcher",
+    "name": "Tarun",
     "role": "Student",
     "bio": "Working on experiments and writing up results.",
     "focus": ["Experiments", "Writing"],

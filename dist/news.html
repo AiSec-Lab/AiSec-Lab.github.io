@@ -10,7 +10,7 @@
       integrity="sha384-xh6O/Ck1AhZ1tcHTfb3e8DqRL3OjaxAg/P6MqxsVXniPXTWh05rq6ArtyTcwxgW9"
       crossorigin="anonymous"
     />
-    <link rel="stylesheet" href="assets/styles.css" />
+    <link rel="stylesheet" href="assets/styles.css?v=20260317-terminalfix24" />
     <link rel="icon" type="image/x-icon" href="assets/images/logo/logo.ico" />
   </head>
   <body>
@@ -33,10 +33,9 @@
         <nav class="nav-links" aria-label="Primary navigation">
           <a href="index.html">Home</a>
           <a href="news.html">News</a>
-          <a href="papers.html">Papers</a>
+          <a href="papers.html">Publications</a>
           <a href="projects.html">Projects</a>
           <a href="people.html">People</a>
-          <a href="gallery.html">Gallery</a>
         </nav>
       </div>
     </header>
@@ -62,35 +61,41 @@
                 <h2>Latest</h2>
                 <p class="lead">Add items to the JSON file; this page will refresh automatically.</p>
                 <div class="grid projects" data-news-list>
-      <div class="card news-card with-thumb">
+      <a class="detail-card-link" href="detail.html?type=news&id=1">
+      <div class="card news-card detail-card with-thumb">
         <div class="thumb" style="background-image:url('assets/images/news/placeholder.svg')"></div>
         <div>
           <div class="pill">Sep 9, 2024</div>
           <h3>Lab website scaffold ready</h3>
           <p class="muted">Baseline multi-page layout with ai-folio styling and data hooks is live.</p>
-          
+          <div class="cta-row"><span class="text-link">Open details</span></div>
         </div>
       </div>
+      </a>
     
-      <div class="card news-card with-thumb">
+      <a class="detail-card-link" href="detail.html?type=news&id=2">
+      <div class="card news-card detail-card with-thumb">
         <div class="thumb" style="background-image:url('assets/images/news/placeholder.svg')"></div>
         <div>
           <div class="pill">Aug 19, 2024</div>
           <h3>First paper placeholders added</h3>
           <p class="muted">Numbered BibTeX files now render automatically on the papers page.</p>
-          
+          <div class="cta-row"><span class="text-link">Open details</span></div>
         </div>
       </div>
+      </a>
     
-      <div class="card news-card with-thumb">
+      <a class="detail-card-link" href="detail.html?type=news&id=3">
+      <div class="card news-card detail-card with-thumb">
         <div class="thumb" style="background-image:url('assets/images/news/placeholder.svg')"></div>
         <div>
           <div class="pill">Jul 14, 2024</div>
           <h3>Team formed</h3>
           <p class="muted">1 PI, 1 Co-PI, and 1 student are set up in data/people.json.</p>
-          
+          <div class="cta-row"><span class="text-link">Open details</span></div>
         </div>
       </div>
+      </a>
     </div>
               </div>
             </div>
@@ -110,6 +115,6 @@
       integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
       crossorigin="anonymous"
     ></script>
-    <script src="assets/script.js"></script>
+    <script src="assets/script.js?v=20260317-terminalfix24"></script>
   </body>
 </html>

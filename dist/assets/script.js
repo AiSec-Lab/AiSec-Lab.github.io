@@ -5,8 +5,8 @@ document.addEventListener('DOMContentLoaded', () => {
   renderNews();
   renderProjects();
   renderPeople();
-  renderGallery();
   renderPapers();
+  renderDetailPage();
   initTerminal();
 });
 
@@ -36,20 +36,35 @@ async function loadJSON(path, fallback = []) {
   }
 }
 
+async function loadText(path, fallback = '') {
+  try {
+    const res = await fetch(path);
+    if (!res.ok) return fallback;
+    return await res.text();
+  } catch (err) {
+    console.warn(`Could not load ${path}`, err);
+    dataLoadError = true;
+    return fallback;
+  }
+}
+
 let cachedData = null;
 let dataLoadError = false;
 let currentPath = ['/'];
-const rootDirs = ['news', 'projects', 'people', 'papers', 'gallery'];
+const rootDirs = ['news', 'projects', 'people', 'publications'];
+const defaultLabIntro = [
+  'The primary focus of the lab is on the intersection of AI and security, exploring how artificial intelligence can both enhance and threaten cybersecurity.',
+  'The lab intends to develop tools to enhance security and privacy measures using AI, while also investigating potential vulnerabilities introduced by AI systems.',
+];
 async function loadAllData() {
   if (cachedData) return cachedData;
-  const [news, projects, people, gallery, papers] = await Promise.all([
+  const [news, projects, people, papers] = await Promise.all([
     loadJSON('data/news.json'),
     loadJSON('data/projects.json'),
     loadJSON('data/people.json'),
-    loadJSON('data/gallery.json'),
     loadBibPapers(),
   ]);
-  cachedData = { news, projects, people, gallery, papers };
+  cachedData = { news, projects, people, papers };
   return cachedData;
 }
 
@@ -64,16 +79,18 @@ async function renderHeroNews() {
   target.innerHTML = news
     .slice(0, 5)
     .map(
-      (item) => `
-        <div class="card news-card${item.image ? ' with-thumb' : ''}">
+      (item, idx) => `
+        <a class="detail-card-link" href="${getDetailLink('news', idx + 1)}">
+        <div class="card news-card detail-card${item.image ? ' with-thumb' : ''}">
           ${item.image ? `<div class="thumb" style="background-image:url('${item.image}')"></div>` : ''}
           <div>
             <div class="pill">${formatDate(item.date)}</div>
             <h3>${item.title || 'Untitled update'}</h3>
             <p class="muted">${item.summary || ''}</p>
-            ${item.link ? `<a class="text-link" href="${item.link}" target="_blank" rel="noopener">Learn more</a>` : ''}
+            <div class="cta-row"><span class="text-link">Open details</span></div>
           </div>
         </div>
+        </a>
       `,
     )
     .join('');
@@ -89,16 +106,18 @@ async function renderNews() {
   }
   target.innerHTML = news
     .map(
-      (item) => `
-      <div class="card news-card${item.image ? ' with-thumb' : ''}">
+      (item, idx) => `
+      <a class="detail-card-link" href="${getDetailLink('news', idx + 1)}">
+      <div class="card news-card detail-card${item.image ? ' with-thumb' : ''}">
         ${item.image ? `<div class="thumb" style="background-image:url('${item.image}')"></div>` : ''}
         <div>
           <div class="pill">${formatDate(item.date)}</div>
           <h3>${item.title || 'Untitled update'}</h3>
           <p class="muted">${item.summary || ''}</p>
-          ${item.link ? `<a class="text-link" href="${item.link}" target="_blank" rel="noopener">Learn more</a>` : ''}
+          <div class="cta-row"><span class="text-link">Open details</span></div>
         </div>
       </div>
+      </a>
     `,
     )
     .join('');
@@ -114,16 +133,18 @@ async function renderProjects() {
   }
   target.innerHTML = projects
     .map(
-      (project) => `
-      <div class="card${project.image ? ' with-thumb' : ''}">
+      (project, idx) => `
+      <a class="detail-card-link" href="${getDetailLink('projects', idx + 1)}">
+      <div class="card detail-card${project.image ? ' with-thumb' : ''}">
         ${project.image ? `<div class="thumb" style="background-image:url('${project.image}')"></div>` : ''}
         <div>
           <h3>${project.title || 'Project title'}</h3>
           <p class="muted">${project.summary || ''}</p>
           ${renderTags(project.tags)}
-          ${project.link ? `<div class="cta-row"><a class="text-link" href="${project.link}" target="_blank" rel="noopener">Project page</a></div>` : ''}
+          <div class="cta-row"><span class="text-link">Open details</span></div>
         </div>
       </div>
+      </a>
     `,
     )
     .join('');
@@ -137,11 +158,14 @@ async function renderPeople() {
     target.innerHTML = '<p class="muted">Add members to data/people.json to see them here.</p>';
     return;
   }
-  const ranked = [...people].sort((a, b) => rankRole(a.role) - rankRole(b.role));
+  const ranked = people
+    .map((person, idx) => ({ ...person, _detailId: idx + 1 }))
+    .sort((a, b) => rankRole(a.role) - rankRole(b.role));
   target.innerHTML = ranked
     .map(
       (person) => `
-      <div class="card person">
+      <a class="detail-card-link" href="${getDetailLink('people', person._detailId)}">
+      <div class="card person detail-card">
         ${
           person.image
             ? `<div class="avatar photo" style="background-image:url('${person.image}')"></div>`
@@ -152,9 +176,10 @@ async function renderPeople() {
           <div class="role">${person.role || 'Role'}</div>
           <p class="muted">${person.bio || ''}</p>
           ${renderTags(person.focus)}
-          ${person.link ? `<div class="cta-row"><a class="text-link" href="${person.link}" target="_blank" rel="noopener">Profile</a></div>` : ''}
+          <div class="cta-row"><span class="text-link">Open details</span></div>
         </div>
       </div>
+      </a>
     `,
     )
     .join('');
@@ -168,29 +193,6 @@ function rankRole(role = '') {
   return 3;
 }
 
-async function renderGallery() {
-  const target = document.querySelector('[data-gallery-list]');
-  if (!target) return;
-  const { gallery } = await loadAllData();
-  if (!gallery.length) {
-    target.innerHTML = '<p class="muted">Add items to data/gallery.json to see them here.</p>';
-    return;
-  }
-  target.innerHTML = gallery
-    .map((item) => {
-      const background = item.image ? `style="background-image:url('${item.image}');"` : '';
-      return `
-        <div class="gallery-item" ${background}>
-          <div class="gallery-overlay">
-            <div class="gallery-title">${item.title || 'Untitled'}</div>
-            <div class="gallery-caption">${item.caption || ''}</div>
-          </div>
-        </div>
-      `;
-    })
-    .join('');
-}
-
 async function renderPapers() {
   const target = document.querySelector('[data-papers-list]');
   if (!target) return;
@@ -201,26 +203,237 @@ async function renderPapers() {
   }
   target.innerHTML = papers
     .map(
-      (paper) => `
-      <div class="paper${paper.image ? ' with-thumb' : ''}">
+      (paper, idx) => `
+      <a class="detail-card-link" href="${getDetailLink('publications', idx + 1)}">
+      <div class="paper detail-card${paper.image ? ' with-thumb' : ''}">
         ${paper.image ? `<div class="paper-thumb" style="background-image:url('${paper.image}')"></div>` : ''}
         <div>
           <div class="title">${paper.title || 'Untitled'}</div>
           <div class="meta">${paper.authors || ''}</div>
           <div class="meta">${paper.venue ? paper.venue + ' · ' : ''}${paper.year || ''}</div>
-          ${paper.url ? `<a class="text-link" href="${paper.url}" target="_blank" rel="noopener">Link</a>` : ''}
+          <div class="cta-row"><span class="text-link">Open details</span></div>
         </div>
       </div>
+      </a>
     `,
     )
     .join('');
+}
+
+async function renderDetailPage() {
+  const target = document.querySelector('[data-detail-content]');
+  if (!target) return;
+
+  const params = new URLSearchParams(window.location.search);
+  const type = (params.get('type') || '').toLowerCase();
+  const id = parseInt(params.get('id') || '', 10);
+  const data = await loadAllData();
+  const collections = {
+    news: data.news || [],
+    projects: data.projects || [],
+    people: data.people || [],
+    publications: data.papers || [],
+    papers: data.papers || [],
+  };
+  const list = collections[type];
+
+  if (!list) {
+    target.innerHTML = '<div class="panel"><p class="muted">Unknown detail type.</p></div>';
+    return;
+  }
+  const index = Number.isInteger(id) ? id - 1 : -1;
+  const item = list[index];
+  if (!item) {
+    target.innerHTML = '<div class="panel"><p class="muted">Item not found.</p></div>';
+    return;
+  }
+
+  target.innerHTML = renderDetailItem(type, item);
+}
+
+function renderDetailItem(type, item) {
+  const backPage = type === 'publications' || type === 'papers' ? 'papers.html' : `${type}.html`;
+  switch (type) {
+    case 'news':
+      return `
+        <div class="panel detail-panel">
+          <a class="text-link" href="${backPage}">← Back to News</a>
+          <h1>${item.title || 'Untitled update'}</h1>
+          <div class="detail-meta">${formatDate(item.date)}</div>
+          <p>${item.summary || 'No summary provided.'}</p>
+          ${item.link ? `<div class="cta-row"><a class="text-link" href="${item.link}" target="_blank" rel="noopener">Source link</a></div>` : ''}
+        </div>
+      `;
+    case 'projects':
+      return `
+        <div class="panel detail-panel">
+          <a class="text-link" href="${backPage}">← Back to Projects</a>
+          <h1>${item.title || 'Untitled project'}</h1>
+          <p>${item.summary || 'No summary provided.'}</p>
+          ${renderTags(item.tags)}
+          ${item.link ? `<div class="cta-row"><a class="text-link" href="${item.link}" target="_blank" rel="noopener">Project link</a></div>` : ''}
+        </div>
+      `;
+    case 'people':
+      return `
+        <div class="panel detail-panel">
+          <a class="text-link" href="${backPage}">← Back to People</a>
+          <h1>${item.name || 'Unnamed person'}</h1>
+          <div class="detail-meta">${item.role || ''}</div>
+          <p>${item.bio || 'No bio provided.'}</p>
+          ${renderTags(item.focus)}
+          ${item.link ? `<div class="cta-row"><a class="text-link" href="${item.link}" target="_blank" rel="noopener">Profile link</a></div>` : ''}
+        </div>
+      `;
+    case 'publications':
+    case 'papers': {
+      const venueYear = [item.venue, item.year].filter(Boolean).join(' · ');
+      return `
+        <div class="panel detail-panel">
+          <a class="text-link" href="${backPage}">← Back to Publications</a>
+          <h1>${item.title || 'Untitled publication'}</h1>
+          <div class="detail-meta">${item.authors || ''}</div>
+          <div class="detail-meta">${venueYear}</div>
+          ${renderPublicationFields(item)}
+          ${item.url ? `<div class="cta-row"><a class="text-link" href="${item.url}" target="_blank" rel="noopener">Publication link</a></div>` : ''}
+        </div>
+      `;
+    }
+    default:
+      return '<div class="panel"><p class="muted">Item not found.</p></div>';
+  }
+}
+
+function renderPublicationFields(item) {
+  const fields = item.fields && typeof item.fields === 'object' ? item.fields : {};
+  const allFields = {
+    entrytype: item.entryType || '',
+    citationkey: item.citationKey || '',
+    ...fields,
+  };
+
+  const preferredOrder = [
+    'entrytype',
+    'citationkey',
+    'title',
+    'author',
+    'year',
+    'booktitle',
+    'journal',
+    'editor',
+    'volume',
+    'number',
+    'pages',
+    'publisher',
+    'address',
+    'location',
+    'series',
+    'doi',
+    'url',
+    'abstract',
+    'keywords',
+    'month',
+    'isbn',
+    'issn',
+    'numpages',
+    'eprint',
+    'archiveprefix',
+    'primaryclass',
+    'image',
+  ];
+
+  const remaining = Object.keys(allFields)
+    .filter((key) => !preferredOrder.includes(key))
+    .sort();
+  const orderedKeys = [...preferredOrder, ...remaining].filter((key, idx, arr) => arr.indexOf(key) === idx);
+
+  const rows = orderedKeys
+    .filter((key) => allFields[key])
+    .map((key) => {
+      const valueHtml = formatBibValue(key, allFields[key]);
+      return `
+        <div class="bib-field">
+          <div class="bib-key">${escapeHTML(prettyBibKey(key))}</div>
+          <div class="bib-value">${valueHtml}</div>
+        </div>
+      `;
+    })
+    .join('');
+
+  const coreKeys = ['title', 'author', 'year', 'booktitle', 'journal', 'doi', 'url', 'abstract'];
+  const missingCore = coreKeys.filter((key) => !fields[key]);
+  const missingBlock = missingCore.length
+    ? `
+      <div class="bib-missing">
+        <div class="bib-missing-title">Not provided in this entry</div>
+        <div class="bib-missing-list">${missingCore.map((key) => `<span>${escapeHTML(prettyBibKey(key))}</span>`).join('')}</div>
+      </div>
+    `
+    : '';
+
+  return `
+    <div class="bib-fields">
+      ${rows || '<div class="bib-empty">No BibTeX fields found.</div>'}
+      ${missingBlock}
+    </div>
+  `;
+}
+
+function prettyBibKey(key) {
+  if (!key) return '';
+  return key
+    .replace(/_/g, ' ')
+    .replace(/([a-z])([A-Z])/g, '$1 $2')
+    .replace(/\b\w/g, (ch) => ch.toUpperCase());
+}
+
+function formatBibValue(key, value) {
+  if (!value) return '<span class="bib-empty">Not provided</span>';
+  const raw = String(value).trim();
+  if (!raw) return '<span class="bib-empty">Not provided</span>';
+
+  if (key === 'author') {
+    return escapeHTML(formatAuthors(raw));
+  }
+
+  if (key === 'doi') {
+    const normalized = raw.replace(/^https?:\/\/(dx\.)?doi\.org\//i, '').replace(/^doi:\s*/i, '').trim();
+    const href = normalized ? `https://doi.org/${normalized}` : '';
+    if (href) {
+      return `<a class="text-link" href="${escapeAttr(href)}" target="_blank" rel="noopener">${escapeHTML(raw)}</a>`;
+    }
+  }
+
+  if (key === 'url' || key === 'image') {
+    const href = normalizeExternalUrl(raw);
+    if (href) {
+      return `<a class="text-link" href="${escapeAttr(href)}" target="_blank" rel="noopener">${escapeHTML(raw)}</a>`;
+    }
+  }
+
+  return escapeHTML(raw);
+}
+
+function normalizeExternalUrl(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  if (/^(https?:)?\/\//i.test(raw)) return raw.startsWith('//') ? `https:${raw}` : raw;
+  if (/^www\./i.test(raw)) return `https://${raw}`;
+  return raw;
 }
 
 async function loadBibPapers() {
   const items = [];
   for (let i = 1; i <= 200; i++) {
     const path = `papers/${i}.bib`;
-    const res = await fetch(path);
+    let res;
+    try {
+      res = await fetch(path);
+    } catch (err) {
+      console.warn(`Could not load ${path}`, err);
+      dataLoadError = true;
+      break;
+    }
     if (!res.ok) break;
     const text = await res.text();
     const parsed = parseBib(text);
@@ -231,26 +444,188 @@ async function loadBibPapers() {
 
 function parseBib(text) {
   if (!text) return null;
-  const field = (name) => {
-    const match = text.match(new RegExp(`${name}\\s*=\\s*[{\"]([^{}\n]+)[}\"]`, 'i'));
-    return match ? match[1].trim() : '';
-  };
-  const title = field('title');
-  const authors = field('author');
-  const year = field('year');
-  const journal = field('journal') || field('booktitle') || '';
-  const doi = field('doi');
-  const url = field('url') || (doi ? `https://doi.org/${doi}` : '');
-  const venue = journal;
-  const image = field('image');
+  const parsed = parseBibEntry(text);
+  if (!parsed) return null;
+
+  const fields = parsed.fields;
+  const title = fields.title || '';
+  const author = fields.author || '';
+  const year = fields.year || '';
+  const venue = fields.booktitle || fields.journal || '';
+  const doi = fields.doi || '';
+  const url = fields.url || (doi ? `https://doi.org/${doi}` : '');
+  const image = fields.image || '';
+
   return {
+    entryType: parsed.entryType,
+    citationKey: parsed.citationKey,
+    fields,
     title,
-    authors: formatAuthors(authors),
+    authors: formatAuthors(author),
     year,
     venue,
     url,
     image,
   };
+}
+
+function parseBibEntry(rawText) {
+  const text = String(rawText || '').replace(/\r\n?/g, '\n');
+  const atIndex = text.indexOf('@');
+  if (atIndex < 0) return null;
+
+  const typeMatch = text.slice(atIndex + 1).match(/^\s*([a-zA-Z]+)/);
+  if (!typeMatch) return null;
+  const entryType = typeMatch[1].toLowerCase();
+  let i = atIndex + 1 + typeMatch[0].length;
+
+  while (i < text.length && /\s/.test(text[i])) i += 1;
+  const openChar = text[i];
+  if (openChar !== '{' && openChar !== '(') return null;
+  const closeChar = openChar === '{' ? '}' : ')';
+  const closeIndex = findMatchingDelimiter(text, i, openChar, closeChar);
+  if (closeIndex < 0) return null;
+
+  const entryBody = text.slice(i + 1, closeIndex).trim();
+  const firstComma = findTopLevelComma(entryBody);
+  if (firstComma < 0) return null;
+
+  const citationKey = entryBody.slice(0, firstComma).trim();
+  const fieldsText = entryBody.slice(firstComma + 1);
+  const fields = parseBibFields(fieldsText);
+  return { entryType, citationKey, fields };
+}
+
+function findMatchingDelimiter(text, startIndex, openChar, closeChar) {
+  let depth = 0;
+  let inQuote = false;
+  for (let i = startIndex; i < text.length; i += 1) {
+    const ch = text[i];
+    const prev = i > 0 ? text[i - 1] : '';
+
+    if (ch === '"' && prev !== '\\') {
+      inQuote = !inQuote;
+      continue;
+    }
+    if (inQuote) continue;
+
+    if (ch === openChar) {
+      depth += 1;
+      continue;
+    }
+    if (ch === closeChar) {
+      depth -= 1;
+      if (depth === 0) return i;
+    }
+  }
+  return -1;
+}
+
+function findTopLevelComma(text) {
+  let depth = 0;
+  let inQuote = false;
+  for (let i = 0; i < text.length; i += 1) {
+    const ch = text[i];
+    const prev = i > 0 ? text[i - 1] : '';
+    if (ch === '"' && prev !== '\\') {
+      inQuote = !inQuote;
+      continue;
+    }
+    if (inQuote) continue;
+    if (ch === '{') depth += 1;
+    if (ch === '}') depth = Math.max(0, depth - 1);
+    if (ch === ',' && depth === 0) return i;
+  }
+  return -1;
+}
+
+function parseBibFields(text) {
+  const fields = {};
+  let i = 0;
+
+  while (i < text.length) {
+    while (i < text.length && /[\s,]/.test(text[i])) i += 1;
+    if (i >= text.length) break;
+
+    const keyStart = i;
+    while (i < text.length && /[a-zA-Z0-9_:-]/.test(text[i])) i += 1;
+    const key = text.slice(keyStart, i).trim().toLowerCase();
+    if (!key) {
+      i += 1;
+      continue;
+    }
+
+    while (i < text.length && /\s/.test(text[i])) i += 1;
+    if (text[i] !== '=') {
+      while (i < text.length && text[i] !== ',') i += 1;
+      continue;
+    }
+    i += 1;
+    while (i < text.length && /\s/.test(text[i])) i += 1;
+
+    const { value, nextIndex } = readBibValue(text, i);
+    fields[key] = cleanupBibValue(value);
+    i = nextIndex;
+
+    while (i < text.length && /\s/.test(text[i])) i += 1;
+    if (text[i] === ',') i += 1;
+  }
+
+  return fields;
+}
+
+function readBibValue(text, startIndex) {
+  if (startIndex >= text.length) return { value: '', nextIndex: startIndex };
+  const startChar = text[startIndex];
+
+  if (startChar === '{') {
+    let depth = 0;
+    for (let i = startIndex; i < text.length; i += 1) {
+      const ch = text[i];
+      if (ch === '{') depth += 1;
+      if (ch === '}') {
+        depth -= 1;
+        if (depth === 0) {
+          return {
+            value: text.slice(startIndex + 1, i),
+            nextIndex: i + 1,
+          };
+        }
+      }
+    }
+    return { value: text.slice(startIndex + 1), nextIndex: text.length };
+  }
+
+  if (startChar === '"') {
+    let i = startIndex + 1;
+    while (i < text.length) {
+      if (text[i] === '"' && text[i - 1] !== '\\') {
+        return {
+          value: text.slice(startIndex + 1, i),
+          nextIndex: i + 1,
+        };
+      }
+      i += 1;
+    }
+    return { value: text.slice(startIndex + 1), nextIndex: text.length };
+  }
+
+  let i = startIndex;
+  while (i < text.length && text[i] !== ',' && text[i] !== '\n' && text[i] !== '\r') i += 1;
+  return {
+    value: text.slice(startIndex, i),
+    nextIndex: i,
+  };
+}
+
+function cleanupBibValue(value) {
+  let clean = String(value || '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  while (clean.startsWith('{') && clean.endsWith('}') && clean.length > 1) {
+    clean = clean.slice(1, -1).trim();
+  }
+  return clean;
 }
 
 function formatAuthors(authors) {
@@ -284,17 +659,23 @@ function renderTags(tags) {
 }
 
 function initTerminal() {
+  const panel = document.querySelector('.terminal-panel');
   const output = document.querySelector('[data-terminal-output]');
   const form = document.querySelector('[data-terminal-form]');
   const input = document.querySelector('[data-terminal-input]');
-  const promptSpan = document.querySelector('.terminal-form .prompt');
-  if (!output || !form || !input) return;
+  const promptSpan = document.querySelector('[data-terminal-prompt]');
+  const promptHeader = document.querySelector('[data-terminal-prompt-header]');
+  if (!output || !form || !input || !promptSpan) return;
 
   let history = [];
   let historyIndex = history.length;
+  let draftInput = '';
 
+  renderPromptHeader(promptHeader);
+  initTerminalWindowControls(panel);
   updatePrompt(promptSpan);
-  appendLine(output, 'Type "help" to see available commands.');
+  syncKaliCursor(form, input, promptSpan);
+  renderTerminalWelcome(output);
   input.focus();
 
   form.addEventListener('submit', async (e) => {
@@ -302,23 +683,69 @@ function initTerminal() {
     const command = input.value.trim();
     if (!command) return;
     appendLine(output, command, true, getPrompt());
-    history.push(command);
+    if (!history.length || history[history.length - 1] !== command) history.push(command);
     historyIndex = history.length;
+    draftInput = '';
     await handleCommand(command, output, promptSpan);
     input.value = '';
+    syncKaliCursor(form, input, promptSpan);
   });
 
-  input.addEventListener('keydown', (e) => {
+  input.addEventListener('input', () => syncKaliCursor(form, input, promptSpan));
+  input.addEventListener('keydown', async (e) => {
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      let data = cachedData;
+      if (!data) {
+        try {
+          data = await loadAllData();
+        } catch {
+          data = { news: [], projects: [], people: [], papers: [] };
+        }
+      }
+      const completed = autocompleteCommand(input.value, data);
+      input.value = completed;
+      syncKaliCursor(form, input, promptSpan);
+      return;
+    }
+
     if (e.key === 'ArrowUp') {
+      if (!history.length) return;
+      if (historyIndex >= history.length) draftInput = input.value;
       historyIndex = Math.max(0, historyIndex - 1);
       input.value = history[historyIndex] || '';
+      syncKaliCursor(form, input, promptSpan);
       e.preventDefault();
     } else if (e.key === 'ArrowDown') {
-      historyIndex = Math.min(history.length, historyIndex + 1);
-      input.value = history[historyIndex] || '';
+      if (!history.length) return;
+      if (historyIndex < history.length - 1) {
+        historyIndex += 1;
+        input.value = history[historyIndex] || '';
+      } else {
+        historyIndex = history.length;
+        input.value = draftInput;
+      }
+      syncKaliCursor(form, input, promptSpan);
       e.preventDefault();
     }
   });
+}
+
+async function renderTerminalWelcome(output) {
+  appendStyledLine(output, '<span class="terminal-banner terminal-green">Welcome to AiSec Lab</span>');
+
+  const introText = await loadText('data/lab-intro.txt', defaultLabIntro.join('\n'));
+  const lines = introText
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .slice(0, 8);
+
+  for (const line of lines) {
+    await appendTypewriterLine(output, line, 'terminal-orange');
+  }
+
+  appendStyledLine(output, '<span class="terminal-red">Type help to get started.</span>');
 }
 
 async function handleCommand(command, output, promptSpan) {
@@ -330,10 +757,7 @@ async function handleCommand(command, output, promptSpan) {
   }
   switch (cmd) {
     case 'help':
-      appendLine(
-        output,
-        'Commands: ls, cd <dir>, cd .., view <item> [--view], help, clear. Root dirs: papers, projects, people, news, gallery.',
-      );
+      printHelp(output);
       break;
     case 'ls':
       listCurrent(output, data);
@@ -357,12 +781,9 @@ async function handleCommand(command, output, promptSpan) {
       changeDir('people', output, promptSpan);
       listCurrent(output, data);
       break;
+    case 'publications':
     case 'papers':
-      changeDir('papers', output, promptSpan);
-      listCurrent(output, data);
-      break;
-    case 'gallery':
-      changeDir('gallery', output, promptSpan);
+      changeDir('publications', output, promptSpan);
       listCurrent(output, data);
       break;
     default:
@@ -371,16 +792,24 @@ async function handleCommand(command, output, promptSpan) {
         changeDir(target, output, promptSpan);
         break;
       }
-      if (cmd.startsWith('view ') || cmd.endsWith('--view')) {
-        const clean = command.replace('--view', '').trim();
+      if (cmd.startsWith('view ') || cmd === 'view' || cmd.endsWith('--link')) {
+        const openAfterPrint = /\s--link\s*$/i.test(command.trim());
+        const clean = command.replace(/\s--link\s*$/i, '').trim();
         const parts = clean.split(/\s+/).filter(Boolean);
-        parts.shift();
+        if (parts[0]?.toLowerCase() === 'view') parts.shift();
         const target = parts.join(' ');
-        handleView(target, data, output);
+        handleView(target, data, output, openAfterPrint);
         break;
       }
       appendLine(output, `Unknown command: ${command}`);
   }
+}
+
+function printHelp(output) {
+  appendLine(output, 'Commands: ls, cd <dir>, cd .., view <item> [--link], help, clear');
+  appendLine(output, 'Root dirs:');
+  rootDirs.forEach((dir) => appendStyledLine(output, `<span class="terminal-green">/${escapeHTML(dir)}</span>`));
+  appendLine(output, 'Tip: use "view <item>" to print details, or add "--link" to open the link.');
 }
 
 function changeDir(target, output, promptSpan) {
@@ -398,8 +827,9 @@ function changeDir(target, output, promptSpan) {
     listCurrent(output, cachedData || {});
     return;
   }
-  if (rootDirs.includes(clean.toLowerCase())) {
-    currentPath = ['/', clean.toLowerCase()];
+  const normalizedTarget = clean.toLowerCase() === 'papers' ? 'publications' : clean.toLowerCase();
+  if (rootDirs.includes(normalizedTarget)) {
+    currentPath = ['/', normalizedTarget];
     updatePrompt(promptSpan);
     listCurrent(output, cachedData || {});
   } else {
@@ -411,7 +841,7 @@ function listCurrent(output, data) {
   const dir = currentPath[currentPath.length - 1];
   switch (dir) {
     case '/':
-      appendLine(output, 'news/  projects/  people/  papers/  gallery/');
+      appendLine(output, 'news/  projects/  people/  publications/');
       break;
     case 'news':
       if (!data.news?.length) appendLine(output, 'No news items yet.');
@@ -431,16 +861,11 @@ function listCurrent(output, data) {
         appendLine(output, `${idx + 1}. ${p.name || ''} [${p.role || ''}] — ${p.bio || ''}`),
       );
       break;
+    case 'publications':
     case 'papers':
-      if (!data.papers?.length) appendLine(output, 'No papers yet.');
+      if (!data.papers?.length) appendLine(output, 'No publications yet.');
       data.papers?.forEach((p, idx) =>
         appendLine(output, `${idx + 1}. ${p.title || ''} — ${p.authors || ''} (${p.year || ''})`),
-      );
-      break;
-    case 'gallery':
-      if (!data.gallery?.length) appendLine(output, 'No gallery items yet.');
-      data.gallery?.forEach((g, idx) =>
-        appendLine(output, `${idx + 1}. ${g.title || 'Untitled'} — ${g.caption || ''}`),
       );
       break;
     default:
@@ -448,7 +873,7 @@ function listCurrent(output, data) {
   }
 }
 
-function handleView(target, data, output) {
+function handleView(target, data, output, openAfterPrint = false) {
   if (!target) {
     appendLine(output, 'Specify an item to view.');
     return;
@@ -467,8 +892,8 @@ function handleView(target, data, output) {
       news: 'news.html',
       projects: 'projects.html',
       people: 'people.html',
+      publications: 'papers.html',
       papers: 'papers.html',
-      gallery: 'gallery.html',
     };
     const key = target.toLowerCase().replace(/\/+$/, '');
     if (pageLinks[key]) openLink(pageLinks[key]);
@@ -481,43 +906,69 @@ function handleView(target, data, output) {
 
   switch (dir) {
     case 'news': {
-      const item = isIndex
-        ? data.news?.[index - 1]
-        : data.news?.find((n) => (n.title || '').toLowerCase().includes(target.toLowerCase()));
+      const itemIndex = isIndex
+        ? index - 1
+        : (data.news || []).findIndex((n) => (n.title || '').toLowerCase().includes(target.toLowerCase()));
+      const item = itemIndex >= 0 ? data.news?.[itemIndex] : undefined;
       if (!item) return appendLine(output, 'Item not found.');
-      openLink(item.link || 'news.html');
+      const detailLink = getDetailLink('news', itemIndex + 1);
+      printEntry(output, {
+        title: item.title || 'Untitled update',
+        body: item.summary || 'No summary provided.',
+        meta: item.date ? `Date: ${formatDate(item.date)}` : '',
+        link: detailLink,
+      });
+      if (openAfterPrint) openLink(detailLink);
       break;
     }
     case 'projects': {
-      const item = isIndex
-        ? data.projects?.[index - 1]
-        : data.projects?.find((p) => (p.title || '').toLowerCase().includes(target.toLowerCase()));
+      const itemIndex = isIndex
+        ? index - 1
+        : (data.projects || []).findIndex((p) => (p.title || '').toLowerCase().includes(target.toLowerCase()));
+      const item = itemIndex >= 0 ? data.projects?.[itemIndex] : undefined;
       if (!item) return appendLine(output, 'Item not found.');
-      openLink(item.link || 'projects.html');
+      const detailLink = getDetailLink('projects', itemIndex + 1);
+      printEntry(output, {
+        title: item.title || 'Untitled project',
+        body: item.summary || 'No summary provided.',
+        meta: item.tags?.length ? `Tags: ${item.tags.join(', ')}` : '',
+        link: detailLink,
+      });
+      if (openAfterPrint) openLink(detailLink);
       break;
     }
     case 'people': {
-      const item = isIndex
-        ? data.people?.[index - 1]
-        : data.people?.find((p) => (p.name || '').toLowerCase().includes(target.toLowerCase()));
+      const itemIndex = isIndex
+        ? index - 1
+        : (data.people || []).findIndex((p) => (p.name || '').toLowerCase().includes(target.toLowerCase()));
+      const item = itemIndex >= 0 ? data.people?.[itemIndex] : undefined;
       if (!item) return appendLine(output, 'Item not found.');
-      openLink(item.link || 'people.html');
+      const detailLink = getDetailLink('people', itemIndex + 1);
+      printEntry(output, {
+        title: item.name || 'Unnamed person',
+        body: item.bio || 'No bio provided.',
+        meta: item.role ? `Role: ${item.role}` : '',
+        link: detailLink,
+      });
+      if (openAfterPrint) openLink(detailLink);
       break;
     }
+    case 'publications':
     case 'papers': {
-      const item = isIndex
-        ? data.papers?.[index - 1]
-        : data.papers?.find((p) => (p.title || '').toLowerCase().includes(target.toLowerCase()));
+      const itemIndex = isIndex
+        ? index - 1
+        : (data.papers || []).findIndex((p) => (p.title || '').toLowerCase().includes(target.toLowerCase()));
+      const item = itemIndex >= 0 ? data.papers?.[itemIndex] : undefined;
       if (!item) return appendLine(output, 'Item not found.');
-      openLink(item.url || 'papers.html');
-      break;
-    }
-    case 'gallery': {
-      const item = isIndex
-        ? data.gallery?.[index - 1]
-        : data.gallery?.find((g) => (g.title || '').toLowerCase().includes(target.toLowerCase()));
-      if (!item) return appendLine(output, 'Item not found.');
-      openLink(item.image || 'gallery.html');
+      const detailLink = getDetailLink('publications', itemIndex + 1);
+      const venueYear = [item.venue, item.year].filter(Boolean).join(' · ');
+      printEntry(output, {
+        title: item.title || 'Untitled publication',
+        body: item.authors || 'No author list available.',
+        meta: venueYear,
+        link: detailLink,
+      });
+      if (openAfterPrint) openLink(detailLink);
       break;
     }
     default:
@@ -525,9 +976,25 @@ function handleView(target, data, output) {
   }
 }
 
+function printEntry(output, entry) {
+  appendLine(output, '________________________________________');
+  appendStyledLine(output, `<span class="terminal-green">${escapeHTML(entry.title || 'Untitled')}</span>`);
+  appendLine(output, '________________________________________');
+  appendLine(output, entry.body || 'No details available.');
+  if (entry.meta) appendLine(output, entry.meta);
+  if (entry.link) {
+    appendStyledLine(
+      output,
+      `<span class="terminal-orange">Link</span>: <a class="terminal-link" href="${escapeAttr(entry.link)}" target="_blank" rel="noopener">${escapeHTML(entry.link)}</a>`,
+    );
+  } else {
+    appendStyledLine(output, '<span class="terminal-orange">Link</span>: <span class="terminal-green">N/A</span>');
+  }
+}
+
 function autocompleteCommand(inputValue, data) {
   const trimmed = inputValue.trim();
-  if (!trimmed) return 'ls';
+  if (!trimmed) return inputValue;
   const parts = trimmed.split(/\s+/);
   const currentDir = currentPath[currentPath.length - 1];
   const last = parts[parts.length - 1];
@@ -536,6 +1003,10 @@ function autocompleteCommand(inputValue, data) {
   if (isCd) {
     const target = parts[1] || '';
     const clean = target.replace(/\/+$/, '');
+    if (clean && 'papers'.startsWith(clean.toLowerCase())) {
+      parts[1] = 'publications/';
+      return parts.join(' ');
+    }
     const match = rootDirs.find((d) => d.startsWith(clean.toLowerCase()));
     if (match) {
       parts[1] = match + '/';
@@ -545,7 +1016,8 @@ function autocompleteCommand(inputValue, data) {
   }
 
   if (parts.length === 1) {
-    const match = rootDirs.find((d) => d.startsWith(last.toLowerCase()));
+    const commands = ['help', 'ls', 'cd', 'view', 'clear', 'news', 'projects', 'people', 'publications', 'papers'];
+    const match = [...commands, ...rootDirs].find((d) => d.startsWith(last.toLowerCase()));
     return match ? match : inputValue;
   }
 
@@ -557,10 +1029,9 @@ function autocompleteCommand(inputValue, data) {
         return data.projects || [];
       case 'people':
         return data.people || [];
+      case 'publications':
       case 'papers':
         return data.papers || [];
-      case 'gallery':
-        return data.gallery || [];
       default:
         return [];
     }
@@ -579,7 +1050,7 @@ function autocompleteCommand(inputValue, data) {
   return inputValue;
 }
 
-function appendLine(output, text, isCommand = false, promptText = '$') {
+function appendLine(output, text, isCommand = false, promptText = '$', autoScroll = true) {
   const line = document.createElement('div');
   line.className = 'terminal-line';
   if (isCommand) {
@@ -588,17 +1059,43 @@ function appendLine(output, text, isCommand = false, promptText = '$') {
     line.innerHTML = escapeHTML(text);
   }
   output.appendChild(line);
-  output.scrollTop = output.scrollHeight;
+  if (autoScroll) scrollTerminal(output);
+}
+
+function appendStyledLine(output, html, autoScroll = true) {
+  const line = document.createElement('div');
+  line.className = 'terminal-line';
+  line.innerHTML = html;
+  output.appendChild(line);
+  if (autoScroll) scrollTerminal(output);
+}
+
+async function appendTypewriterLine(output, text, className = '') {
+  const line = document.createElement('div');
+  line.className = `terminal-line ${className}`.trim();
+  output.appendChild(line);
+  for (const ch of text) {
+    line.textContent += ch;
+    scrollTerminal(output);
+    await delay(8);
+  }
+  await delay(120);
+}
+
+function delay(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 function updatePrompt(span) {
   if (!span) return;
   span.textContent = getPrompt();
+  const form = span.closest('.terminal-form');
+  const input = form?.querySelector('input');
+  syncKaliCursor(form, input, span);
 }
 
 function getPrompt() {
-  const suffix = currentPath.length === 1 ? '/' : '/' + currentPath.slice(1).join('/');
-  return `${suffix} $`;
+  return '└─$';
 }
 
 function normalizePath(path) {
@@ -611,11 +1108,56 @@ function normalizePath(path) {
   return clean;
 }
 
-function escapeHTML(str) {
-  return str
+function getDetailLink(type, id) {
+  return `detail.html?type=${encodeURIComponent(type)}&id=${encodeURIComponent(id)}`;
+}
+
+function escapeHTML(str = '') {
+  return String(str)
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
+}
+
+function escapeAttr(str = '') {
+  return String(str).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+function syncKaliCursor(form, input, promptSpan) {
+  if (!form || !input || !promptSpan) return;
+  const promptLength = (promptSpan.textContent || '').length;
+  const inputLength = (input.value || '').length;
+  const cursorHost = promptSpan.closest('.terminal-input-row') || form;
+  cursorHost.style.setProperty('--prompt-ch', `${promptLength}`);
+  cursorHost.style.setProperty('--cursor-ch', `${inputLength}`);
+}
+
+function renderPromptHeader(headerEl) {
+  if (!headerEl) return;
+  headerEl.innerHTML =
+    '<span class="terminal-green">┌──(visitor@aiseclab)-</span><span class="terminal-home">[~]</span>';
+}
+
+function scrollTerminal(output) {
+  const terminalWindow = output.closest('.terminal-window');
+  if (!terminalWindow) return;
+  terminalWindow.scrollTop = terminalWindow.scrollHeight;
+}
+
+function initTerminalWindowControls(panel) {
+  if (!panel) return;
+  const maxBtn = panel.querySelector('[data-terminal-maximize]');
+  if (!maxBtn) return;
+
+  maxBtn.setAttribute('aria-pressed', 'false');
+  maxBtn.addEventListener('click', () => {
+    const next = !panel.classList.contains('terminal-panel-maximized');
+    panel.classList.toggle('terminal-panel-maximized', next);
+    document.body.classList.toggle('terminal-maximized-lock', next);
+    maxBtn.setAttribute('aria-pressed', String(next));
+    maxBtn.textContent = next ? '❐' : '▢';
+    maxBtn.title = next ? 'Restore' : 'Maximize';
+  });
 }
