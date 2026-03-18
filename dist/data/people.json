@@ -30,9 +30,9 @@
   },
   {
     "name": "Tarun Aditya Kusupati",
-    "role": "Student",
-    "bio": "Working on experiments and writing up results.",
-    "focus": ["Experiments", "Writing"],
+    "role": "Graduate Student",
+    "bio": "Graduate student working on LLMs, side-channels, and ransomware detection, with a focus on classification and experimentation.",
+    "focus": ["LLMs", "Side-channels", "Ransomware detection", "Classification", "Experimentation"],
     "link": "https://scholar.google.com/scholar?q=Tarun+computer+science+University+of+Dayton",
     "image": "assets/images/people/placeholder.svg"
   }
