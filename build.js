@@ -360,7 +360,42 @@ function renderPeople(people) {
   const ranked = people
     .map((person, idx) => ({ ...person, _detailId: idx + 1 }))
     .sort((a, b) => rankRole(a.role) - rankRole(b.role));
-  return ranked
+  const leadTeam = ranked.filter((person) => isLeadRole(person.role));
+  const students = ranked.filter((person) => isStudentRole(person.role));
+  const others = ranked.filter((person) => !isLeadRole(person.role) && !isStudentRole(person.role));
+
+  const sections = [];
+  if (leadTeam.length) {
+    sections.push(`<div class="grid people-grid people-grid-leads">${renderPeopleCards(leadTeam)}</div>`);
+  }
+  if (students.length) {
+    sections.push(`<div class="grid people-grid people-grid-students">${renderPeopleCards(students)}</div>`);
+  }
+  if (others.length) {
+    sections.push(`<div class="grid people-grid people-grid-others">${renderPeopleCards(others)}</div>`);
+  }
+
+  return `<div class="people-rows">${sections.join('')}</div>`;
+}
+
+function rankRole(role = '') {
+  const r = role.toLowerCase();
+  if (r.includes('pi') && !r.includes('co')) return 0;
+  if (r.includes('co') && r.includes('pi')) return 1;
+  if (r.includes('student')) return 2;
+  return 3;
+}
+
+function isLeadRole(role = '') {
+  return role.toLowerCase().includes('pi');
+}
+
+function isStudentRole(role = '') {
+  return role.toLowerCase().includes('student');
+}
+
+function renderPeopleCards(people) {
+  return people
     .map(
       (person) => `
       <a class="detail-card-link" href="${getDetailLink('people', person._detailId)}">
@@ -382,14 +417,6 @@ function renderPeople(people) {
     `,
     )
     .join('');
-}
-
-function rankRole(role = '') {
-  const r = role.toLowerCase();
-  if (r.includes('pi') && !r.includes('co')) return 0;
-  if (r.includes('co') && r.includes('pi')) return 1;
-  if (r.includes('student')) return 2;
-  return 3;
 }
 
 function renderPapers(papers) {

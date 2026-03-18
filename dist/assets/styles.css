@@ -546,6 +546,20 @@ a {
   grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
 }
 
+.people-rows {
+  display: grid;
+  gap: 16px;
+}
+
+.people-grid-leads {
+  grid-template-columns: repeat(2, minmax(230px, 1fr));
+}
+
+.people-grid-students,
+.people-grid-others {
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+}
+
 .person {
   display: flex;
   gap: 14px;
@@ -1062,6 +1076,10 @@ body.terminal-maximized-lock {
 }
 
 @media (max-width: 620px) {
+  .people-grid-leads {
+    grid-template-columns: 1fr;
+  }
+
   .detail-panel.has-publication-logo {
     padding-right: 26px;
   }
