@@ -1779,8 +1779,9 @@ function renderPromptHeader(headerEl) {
 }
 
 function scrollTerminal(output) {
-  if (!output) return;
-  output.scrollTop = output.scrollHeight;
+  const terminalWindow = output?.closest('.terminal-window');
+  if (!terminalWindow) return;
+  terminalWindow.scrollTop = terminalWindow.scrollHeight;
 }
 
 function initTerminalWindowControls(panel) {
