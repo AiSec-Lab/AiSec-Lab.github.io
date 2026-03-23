@@ -1208,7 +1208,7 @@ function initTerminal() {
 }
 
 async function renderTerminalWelcome(output) {
-  appendStyledLine(output, '<span class="terminal-banner terminal-green">Welcome to AiSec Lab</span>');
+  appendStyledLine(output, '<span class="terminal-banner terminal-green">Welcome to AiSec Lab University of Dayton</span>');
 
   const introText = await loadText('data/lab-intro.txt', defaultLabIntro.join('\n'));
   const lines = introText
