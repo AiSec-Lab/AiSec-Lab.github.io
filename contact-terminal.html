@@ -3,14 +3,18 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Gallery — AiSec Lab</title>
+    <title>Terminal Contact — AiSec Lab</title>
+    <meta
+      name="description"
+      content="Terminal-style contact page for AiSec Lab with join information and the University of Dayton contact form."
+    />
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
       rel="stylesheet"
       integrity="sha384-xh6O/Ck1AhZ1tcHTfb3e8DqRL3OjaxAg/P6MqxsVXniPXTWh05rq6ArtyTcwxgW9"
       crossorigin="anonymous"
     />
-    <link rel="stylesheet" href="assets/styles.css?v=20260402-contactpage1" />
+    <link rel="stylesheet" href="assets/styles.css?v=20260402-slidesregen1" />
     <link rel="icon" type="image/x-icon" href="assets/images/logo/logo.ico" />
   </head>
   <body>
@@ -45,9 +49,9 @@
       <section class="page-hero">
         <div class="container">
           <div class="row justify-content-center">
-            <div class="col-12 col-lg-10">
-              <h1>Gallery</h1>
-              <p>Add photos, figures, or fieldwork shots via <code>data/gallery.json</code>.</p>
+            <div class="col-12 col-lg-10 page-hero-copy">
+              <h1>Terminal Contact</h1>
+              <p>A terminal-style contact view for demos, recordings, and a more technical lab vibe.</p>
             </div>
           </div>
         </div>
@@ -57,9 +61,31 @@
         <div class="container">
           <div class="row justify-content-center">
             <div class="col-12 col-lg-10">
-              <div class="panel">
-                <div class="pill">Snapshots</div>
-                <div class="grid gallery" data-gallery-list></div>
+              <div class="panel terminal-panel">
+                <div class="terminal-titlebar">
+                  <div class="terminal-controls" aria-hidden="true">
+                    <button type="button" class="terminal-control is-disabled" title="Minimize disabled" disabled>—</button>
+                    <button type="button" class="terminal-control is-disabled" title="Maximize disabled" disabled>▢</button>
+                    <button type="button" class="terminal-control is-disabled" title="Close disabled" disabled>×</button>
+                  </div>
+                  <div class="terminal-title">terminal-contact.sh</div>
+                </div>
+                <div class="terminal-window terminal-static-window">
+                  <div class="terminal-output" data-contact-terminal-output aria-live="polite"></div>
+                </div>
+              </div>
+
+              <div class="contact-terminal-actions">
+                <button class="button secondary" type="button" data-contact-replay>Replay Message</button>
+                <a class="button secondary" href="contact.html">Open Standard Contact Page</a>
+                <a
+                  class="button"
+                  href="https://udayton.edu/_resources/contact_form.php?cmsId=76ac207d0a480e99411d8665a6867a10"
+                  target="_blank"
+                  rel="noopener"
+                >
+                  Open Contact Form
+                </a>
               </div>
             </div>
           </div>
@@ -78,6 +104,7 @@
       integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
       crossorigin="anonymous"
     ></script>
-    <script src="assets/script.js?v=20260402-contactpage1"></script>
+    <script src="assets/script.js?v=20260402-slidesregen1"></script>
+    <script src="assets/contact-terminal.js?v=20260402-slidesregen1"></script>
   </body>
 </html>

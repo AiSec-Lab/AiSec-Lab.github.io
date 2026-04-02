@@ -7,8 +7,11 @@ Static, ai-folio-inspired layout for AiSec Lab. Each section lives on its own pa
 - `papers.html` — pulls numbered `.bib` files from `papers/` (1.bib, 2.bib, …)
 - `projects.html` — pulls from `data/projects.json`
 - `people.html` — pulls from `data/people.json`
+- `contact.html` — contact page for contributors and prospective lab members
+- `contact-terminal.html` — terminal-style contact page
 - `gallery.html` — pulls from `data/gallery.json`
 - `grants.html` — hidden for now; only linked from its footer
+- `slideshow/` — standalone terminal slideshow for recordings and future edits
 
 Home page extras:
 - Hero news card scrolls updates from `data/news.json`.

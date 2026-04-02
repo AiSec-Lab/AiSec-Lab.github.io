@@ -146,6 +146,7 @@ async function loadAllData() {
 async function renderHeroNews() {
   const target = document.querySelector('[data-hero-news]');
   if (!target) return;
+  if (shouldUsePrerenderedContent(target)) return;
   const { news } = await loadAllData();
   if (!news.length) {
     target.innerHTML = '<p class="muted">Add items to data/news.json to see them here.</p>';
@@ -177,6 +178,7 @@ async function renderHeroNews() {
 async function renderNews() {
   const target = document.querySelector('[data-news-list]');
   if (!target) return;
+  if (shouldUsePrerenderedContent(target)) return;
   const { news } = await loadAllData();
   if (!news.length) {
     target.innerHTML = '<p class="muted">Add items to data/news.json to see them here.</p>';
@@ -207,6 +209,7 @@ async function renderNews() {
 async function renderProjects() {
   const target = document.querySelector('[data-projects-list]');
   if (!target) return;
+  if (shouldUsePrerenderedContent(target)) return;
   const { projects } = await loadAllData();
   if (!projects.length) {
     target.innerHTML = '<p class="muted">Add projects to data/projects.json to see them here.</p>';
@@ -237,6 +240,7 @@ async function renderProjects() {
 async function renderPeople() {
   const target = document.querySelector('[data-people-list]');
   if (!target) return;
+  if (shouldUsePrerenderedContent(target)) return;
   const { people } = await loadAllData();
   if (!people.length) {
     target.innerHTML = '<p class="muted">Add members to data/people.json to see them here.</p>';
@@ -306,6 +310,7 @@ function renderPeopleCards(people) {
 async function renderPapers() {
   const target = document.querySelector('[data-papers-list]');
   if (!target) return;
+  if (shouldUsePrerenderedContent(target)) return;
   const { papers } = await loadAllData();
   if (!papers.length) {
     target.innerHTML = '<p class="muted">Add numbered .bib files in the papers/ folder (1.bib, 2.bib, ...).</p>';
@@ -1132,6 +1137,10 @@ function getInitials(name = '') {
 function renderTags(tags) {
   if (!tags || !tags.length) return '';
   return `<div class="tags">${tags.map((tag) => `<span class="tag">${tag}</span>`).join('')}</div>`;
+}
+
+function shouldUsePrerenderedContent(target) {
+  return window.location.protocol === 'file:' && Boolean(target?.innerHTML.trim());
 }
 
 function initTerminal() {

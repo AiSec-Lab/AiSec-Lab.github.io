@@ -8,7 +8,17 @@ async function main() {
   await fs.mkdir(dist, { recursive: true });
 
   const data = await loadAllData(root);
-  const pages = ['index.html', 'news.html', 'papers.html', 'projects.html', 'people.html', 'detail.html', 'grants.html'];
+  const pages = [
+    'index.html',
+    'news.html',
+    'papers.html',
+    'projects.html',
+    'people.html',
+    'detail.html',
+    'grants.html',
+    'contact.html',
+    'contact-terminal.html',
+  ];
 
   for (const page of pages) {
     const html = await fs.readFile(path.join(root, page), 'utf8');
@@ -22,6 +32,7 @@ async function main() {
   await fs.cp(path.join(root, 'papers-pdf'), path.join(dist, 'papers-pdf'), { recursive: true });
   await fs.cp(path.join(root, 'papers-poster'), path.join(dist, 'papers-poster'), { recursive: true });
   await fs.cp(path.join(root, 'cv'), path.join(dist, 'cv'), { recursive: true });
+  await fs.cp(path.join(root, 'slideshow'), path.join(dist, 'slideshow'), { recursive: true });
 
   console.log('Built static pages to dist/');
 }
