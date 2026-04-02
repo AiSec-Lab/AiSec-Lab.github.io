@@ -3,7 +3,7 @@
     'https://udayton.edu/_resources/contact_form.php?cmsId=76ac207d0a480e99411d8665a6867a10';
   const CONTACT_EMAIL = 'sarefin1[at][universityname].edu';
   const FALLBACK_INTRO =
-    'The primary focus of the lab is on the intersection of A.I. and cybersecurity, exploring how artificial intelligence can both enhance and threaten cybersecurity.';
+    'Our primary focus is on the intersection of A.I. and cybersecurity, exploring how artificial intelligence can both enhance and threaten cybersecurity.';
   const FALLBACK_PROJECTS = [
     {
       title: 'LocalMind: OS-Integrated Local LLM Systems',
@@ -36,12 +36,14 @@
     ]);
 
     const intro = compactText(introText) || FALLBACK_INTRO;
-    const projectList = Array.isArray(projects) && projects.length ? projects : FALLBACK_PROJECTS;
+    const projectList = (Array.isArray(projects) && projects.length ? projects : FALLBACK_PROJECTS)
+      .map((project, index) => ({ project, projectNumber: index + 1 }));
 
     const slides = [
       {
         title: 'Intro',
         command: './aiseclab --intro',
+        path: '~',
         duration: 8200,
         lines: [
           { text: intro },
@@ -50,6 +52,7 @@
       {
         title: 'What We Do',
         command: './aiseclab --what-we-do',
+        path: '~/projects',
         duration: 8600,
         lines: [
           { tone: 'accent', text: 'We work where A.I., systems, and security meet.' },
@@ -58,10 +61,11 @@
           { text: 'Our work spans systems, LLM evaluation, AI security, computer vision, IoT, networking, and edge computing.' },
         ],
       },
-      ...projectList.map((project, index) => buildProjectSlide(project, index)),
+      ...projectList.map(({ project, projectNumber }) => buildProjectSlide(project, projectNumber)),
       {
         title: 'Interested?',
         command: './aiseclab --contact',
+        path: '~/contact',
         duration: 9800,
         lines: [
           { tone: 'contact', text: 'Interested in contributing to any of these projects?' },
@@ -75,7 +79,7 @@
     return slides;
   }
 
-  function buildProjectSlide(project, index) {
+  function buildProjectSlide(project, projectNumber) {
     const sentences = splitSentences(project.summary || '').slice(0, 2);
     const lines = [];
     if (sentences[0]) lines.push({ text: sentences[0] });
@@ -88,8 +92,9 @@
     }
 
     return {
-      title: project.title || `Project ${index + 1}`,
-      command: `./aiseclab --project ${index + 1}`,
+      title: project.title || `Project ${projectNumber}`,
+      command: `./aiseclab --project ${projectNumber}`,
+      path: '~/projects',
       duration: 9000,
       lines,
     };

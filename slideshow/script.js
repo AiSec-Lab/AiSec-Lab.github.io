@@ -2,13 +2,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   const output = document.querySelector('[data-slideshow-output]');
   const title = document.querySelector('[data-slideshow-title]');
   const counter = document.querySelector('[data-slideshow-counter]');
-  const status = document.querySelector('[data-slideshow-status]');
   const toggleButton = document.querySelector('[data-action="toggle"]');
   const prevButton = document.querySelector('[data-action="prev"]');
   const nextButton = document.querySelector('[data-action="next"]');
   const restartButton = document.querySelector('[data-action="restart"]');
 
-  if (!output || !title || !counter || !status || !window.AiSecSlideshowData?.buildSlides) return;
+  if (!output || !title || !counter || !window.AiSecSlideshowData?.buildSlides) return;
 
   const slides = await window.AiSecSlideshowData.buildSlides();
   if (!slides.length) return;
@@ -77,7 +76,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     counter.textContent = `${String(index + 1).padStart(2, '0')} / ${String(slides.length).padStart(2, '0')}`;
     updateStatus();
 
-    appendCommandLine(slide.command || './aiseclab');
+    appendCommandBlock(slide.command || './aiseclab', slide.path || '~');
     await wait(180);
 
     for (const line of slide.lines || []) {
@@ -106,7 +105,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function updateStatus() {
-    status.textContent = autoPlay ? 'Autoplay On' : 'Autoplay Paused';
     if (toggleButton) {
       toggleButton.textContent = autoPlay ? 'Pause' : 'Resume';
     }
@@ -118,11 +116,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     return index;
   }
 
-  function appendCommandLine(text) {
-    const line = document.createElement('div');
-    line.className = 'slideshow-line command';
-    line.innerHTML = `<span class="prompt">visitor@aiseclab:~$</span>${escapeHTML(text)}`;
-    output.appendChild(line);
+  function appendCommandBlock(text, pathLabel) {
+    const headerLine = document.createElement('div');
+    headerLine.className = 'slideshow-line prompt-header';
+    headerLine.innerHTML =
+      `<span class="slideshow-terminal-green">┌──(visitor@aiseclab)-</span><span class="slideshow-terminal-home">[${escapeHTML(pathLabel)}]</span>`;
+    output.appendChild(headerLine);
+
+    const commandLine = document.createElement('div');
+    commandLine.className = 'slideshow-line command';
+    commandLine.innerHTML = `<span class="prompt">└─$</span>${escapeHTML(text)}`;
+    output.appendChild(commandLine);
   }
 
   async function typeLine(text, tone, activeRender) {

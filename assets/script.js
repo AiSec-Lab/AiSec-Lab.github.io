@@ -54,7 +54,7 @@ let currentPath = ['/'];
 const rootDirs = ['news', 'projects', 'people', 'publications'];
 const terminalCommands = ['help', 'man', 'ls', 'cd', 'view', 'cat', 'clear', 'news', 'projects', 'people', 'publications', 'papers'];
 const defaultLabIntro = [
-  'The primary focus of the lab is on the intersection of AI and security, exploring how artificial intelligence can both enhance and threaten cybersecurity.',
+  'Our primary focus is on the intersection of AI and security, exploring how artificial intelligence can both enhance and threaten cybersecurity.',
   'The lab intends to develop tools to enhance security and privacy measures using AI, while also investigating potential vulnerabilities introduced by AI systems.',
 ];
 const manualPages = {
