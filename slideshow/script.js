@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', async () => {
+  const TIMING_SCALE = 0.5;
   const output = document.querySelector('[data-slideshow-output]');
   const title = document.querySelector('[data-slideshow-title]');
   const counter = document.querySelector('[data-slideshow-counter]');
@@ -77,12 +78,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateStatus();
 
     appendCommandBlock(slide.command || './aiseclab', slide.path || '~');
-    await wait(180);
+    await wait(scaleMs(180));
 
     for (const line of slide.lines || []) {
       if (activeRender !== renderId) return;
       await typeLine(line.text || '', line.tone || '', activeRender);
-      await wait(100);
+      await wait(scaleMs(100));
     }
 
     if (activeRender !== renderId) return;
@@ -94,7 +95,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     clearQueuedSlide();
     timeoutId = window.setTimeout(() => {
       goToSlide(currentIndex + 1);
-    }, delay);
+    }, scaleMs(delay));
   }
 
   function clearQueuedSlide() {
@@ -137,8 +138,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     for (const char of String(text)) {
       if (activeRender !== renderId) return;
       line.textContent += char;
-      await wait(11);
+      await wait(scaleMs(11));
     }
+  }
+
+  function scaleMs(ms) {
+    return Math.max(0, Math.round(ms * TIMING_SCALE));
   }
 
   function wait(ms) {

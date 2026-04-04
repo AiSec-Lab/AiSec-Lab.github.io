@@ -52,7 +52,7 @@ let cachedData = null;
 let dataLoadError = false;
 let currentPath = ['/'];
 const rootDirs = ['news', 'projects', 'people', 'publications'];
-const terminalCommands = ['help', 'man', 'ls', 'cd', 'view', 'cat', 'clear', 'news', 'projects', 'people', 'publications', 'papers'];
+const terminalCommands = ['help', 'man', 'ls', 'cd', 'view', 'cat', 'clear'];
 const defaultLabIntro = [
   'Our primary focus is on the intersection of AI and security, exploring how artificial intelligence can both enhance and threaten cybersecurity.',
   'The lab intends to develop tools to enhance security and privacy measures using AI, while also investigating potential vulnerabilities introduced by AI systems.',
@@ -86,7 +86,7 @@ const manualPages = {
       'Changes the active terminal directory.',
       'Valid root directories: news, projects, people, publications.',
     ],
-    examples: ['cd people/', 'cd publications/', 'cd ..'],
+    examples: ['cd news/', 'cd publications/', 'cd ..'],
   },
   view: {
     name: 'view - print item details from the current directory',
@@ -105,30 +105,6 @@ const manualPages = {
     synopsis: ['clear'],
     description: ['Clears all output lines in the terminal window.'],
     examples: ['clear'],
-  },
-  news: {
-    name: 'news - jump to /news and list entries',
-    synopsis: ['news'],
-    description: ['Shortcut for changing directory to /news and running ls.'],
-    examples: ['news'],
-  },
-  projects: {
-    name: 'projects - jump to /projects and list entries',
-    synopsis: ['projects'],
-    description: ['Shortcut for changing directory to /projects and running ls.'],
-    examples: ['projects'],
-  },
-  people: {
-    name: 'people - jump to /people and list entries',
-    synopsis: ['people'],
-    description: ['Shortcut for changing directory to /people and running ls.'],
-    examples: ['people'],
-  },
-  publications: {
-    name: 'publications - jump to /publications and list entries',
-    synopsis: ['publications', 'papers'],
-    description: ['Shortcut for changing directory to /publications and running ls.', 'papers is an alias of publications.'],
-    examples: ['publications', 'papers'],
   },
 };
 async function loadAllData() {
@@ -1261,23 +1237,6 @@ async function handleCommand(command, output, promptSpan) {
     case 'clear':
       output.innerHTML = '';
       break;
-    case 'news':
-      changeDir('news', output, promptSpan);
-      listCurrent(output, data);
-      break;
-    case 'projects':
-      changeDir('projects', output, promptSpan);
-      listCurrent(output, data);
-      break;
-    case 'people':
-      changeDir('people', output, promptSpan);
-      listCurrent(output, data);
-      break;
-    case 'publications':
-    case 'papers':
-      changeDir('publications', output, promptSpan);
-      listCurrent(output, data);
-      break;
     default:
       if (cmd.startsWith('man ')) {
         const topic = command.slice(4).trim().split(/\s+/)[0] || '';
@@ -1372,13 +1331,11 @@ function printHelp(output) {
     appendLine(output, 'Commands: man, ls, cd <dir>, cd .., help, clear');
     appendLine(output, 'Root dirs:');
     rootDirs.forEach((entry) => appendStyledLine(output, `<span class="terminal-green">/${escapeHTML(entry)}</span>`));
-    appendLine(output, 'Tip: use "cd <dir>" to enter a section, then "ls" to list its items.');
+    appendLine(output, 'Example: cd news/');
   } else {
-    appendLine(output, 'Commands: man, ls, cd .., view <index|name> [--link], cat <index|name> [--link], help, clear');
+    appendLine(output, 'Commands: man, ls, cd .., view <item> --link, help, clear');
     appendLine(output, `Current dir: /${dir}`);
-    appendLine(output, 'View usage: view <index|name> [--link]');
-    appendLine(output, 'Examples: view 1, view "LocalMind", view 2 --link');
-    appendLine(output, 'Tip: use "view <index|name>" or "cat <index|name>" to print details, or add "--link" to open the link.');
+    appendLine(output, 'Example: view <item> --link');
   }
   appendLine(output, 'Manuals: use "man <command>" to view command documentation.');
   appendLine(output, 'History: use ↑ and ↓ to browse previous commands.');
@@ -1668,7 +1625,7 @@ function autocompleteCommand(inputValue, data) {
   }
 
   if (parts.length === 1) {
-    const match = [...terminalCommands, ...rootDirs].find((d) => d.startsWith(last.toLowerCase()));
+    const match = terminalCommands.find((d) => d.startsWith(last.toLowerCase()));
     return match ? match : inputValue;
   }
 
